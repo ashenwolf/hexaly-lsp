@@ -51,7 +51,8 @@ fn accepts_the_constructs_the_grammar_fix_added() {
     let (_parser, document) = open(
         "function model() {\n    \
          options[c][o in 0...nbOptions] = readInt();\n    \
-         outFile.println[j in 0...nbJobs](order[j], \" \");\n}\n",
+         outFile.println[j in 0...nbJobs](order[j], \" \");\n    \
+         x[i in 0..3] <- bool();\n}\n",
     );
 
     assert_eq!(syntax::diagnostics(&document), Vec::new());

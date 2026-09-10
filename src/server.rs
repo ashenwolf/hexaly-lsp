@@ -7,9 +7,10 @@ use tokio::sync::Mutex;
 use tower_lsp_server::ls_types::{
     CompletionOptions, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, HoverProviderCapability, InitializeParams,
-    InitializeResult, InitializedParams, MessageType, OneOf, PositionEncodingKind, ServerCapabilities, ServerInfo,
-    SignatureHelp, SignatureHelpOptions, SignatureHelpParams, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+    DocumentSymbolParams, DocumentSymbolResponse, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
+    HoverProviderCapability, InitializeParams, InitializeResult, InitializedParams, MessageType, OneOf,
+    PositionEncodingKind, ServerCapabilities, ServerInfo, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
+    TextDocumentSyncCapability, TextDocumentSyncKind, Uri, WorkspaceSymbolParams, WorkspaceSymbolResponse,
 };
 use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 
@@ -164,6 +165,8 @@ impl LanguageServer for Backend {
                 }),
                 hover_provider: Some(HoverProviderCapability::Simple(true)),
                 definition_provider: Some(OneOf::Left(true)),
+                document_symbol_provider: Some(OneOf::Left(true)),
+                workspace_symbol_provider: Some(OneOf::Left(true)),
                 signature_help_provider: Some(SignatureHelpOptions {
                     trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
                     ..SignatureHelpOptions::default()
@@ -267,6 +270,29 @@ impl LanguageServer for Backend {
 
     async fn shutdown(&self) -> jsonrpc::Result<()> {
         Ok(())
+    }
+
+    async fn document_symbol(&self, params: DocumentSymbolParams) -> jsonrpc::Result<Option<DocumentSymbolResponse>> {
+        let state = self.state.lock().await;
+
+        let Some(document) = state.documents.get(&params.text_document.uri) else {
+            return Ok(None);
+        };
+
+        Ok(Some(DocumentSymbolResponse::Nested(language::document_symbols(
+            document,
+        ))))
+    }
+
+    async fn symbol(&self, params: WorkspaceSymbolParams) -> jsonrpc::Result<Option<WorkspaceSymbolResponse>> {
+        let mut state = self.state.lock().await;
+        let State { parser, workspace, .. } = &mut *state;
+
+        Ok(Some(WorkspaceSymbolResponse::Flat(language::workspace_symbols(
+            workspace,
+            parser,
+            &params.query,
+        ))))
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {

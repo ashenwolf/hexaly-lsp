@@ -7,8 +7,9 @@
 use std::path::Path;
 
 use tower_lsp_server::ls_types::{
-    CompletionItem, CompletionItemKind, Documentation, Hover, HoverContents, Location, MarkupContent, MarkupKind,
-    ParameterInformation, ParameterLabel, Position, Range, SignatureHelp, SignatureInformation, Uri,
+    CompletionItem, CompletionItemKind, DocumentSymbol, Documentation, Hover, HoverContents, Location, MarkupContent,
+    MarkupKind, ParameterInformation, ParameterLabel, Position, Range, SignatureHelp, SignatureInformation,
+    SymbolInformation, SymbolKind, Uri,
 };
 
 use crate::document::Document;
@@ -321,6 +322,76 @@ fn member_location(parser: &mut tree_sitter::Parser, target: &Path, name: &str) 
 /// conversion of its own, and the server only ever deals in absolute paths.
 fn uri_for(path: &Path) -> Option<Uri> {
     format!("file://{}", path.to_str()?).parse().ok()
+}
+
+/// The document's structure, as a tree of LSP symbols.
+///
+/// Nesting is the whole point: a flat list is what a tree-sitter outline query already gives, and it
+/// renders a class's eight fields as eight siblings. It also travels — Neovim, Helix and Emacs draw
+/// their outline and breadcrumbs from this, where an editor-specific query serves only its own
+/// editor.
+pub fn document_symbols(document: &Document) -> Vec<DocumentSymbol> {
+    symbols::outline(document).into_iter().map(symbol).collect()
+}
+
+fn symbol(item: symbols::Outline) -> DocumentSymbol {
+    #[allow(deprecated)] // `deprecated` is set by the struct's own definition, not by us.
+    DocumentSymbol {
+        name: item.name,
+        detail: Some(item.detail),
+        kind: symbol_kind(item.kind),
+        tags: None,
+        deprecated: None,
+        range: item.range,
+        selection_range: item.selection,
+        children: (!item.children.is_empty()).then(|| item.children.into_iter().map(symbol).collect()),
+    }
+}
+
+/// Declarations across the whole workspace matching `query`.
+///
+/// The capability an outline query cannot provide at all: reaching a declaration in one of a dozen
+/// files without knowing which. An empty query returns everything, which is what editors send when
+/// the prompt first opens.
+pub fn workspace_symbols(
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+    query: &str,
+) -> Vec<SymbolInformation> {
+    workspace
+        .symbols(parser, query)
+        .into_iter()
+        .filter_map(|(path, local)| {
+            let uri = uri_for(&path)?;
+
+            #[allow(deprecated)]
+            Some(SymbolInformation {
+                name: local.name,
+                kind: symbol_kind(local.kind),
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri,
+                    // The declaration's own line is not recorded by `exports`, so the file is the
+                    // answer here. Opening the file and searching is what an editor does next anyway,
+                    // and go-to-definition already lands precisely.
+                    range: Range::default(),
+                },
+                container_name: path.file_stem().and_then(|stem| stem.to_str()).map(str::to_string),
+            })
+        })
+        .collect()
+}
+
+fn symbol_kind(kind: LocalKind) -> SymbolKind {
+    match kind {
+        LocalKind::Function => SymbolKind::FUNCTION,
+        LocalKind::Class => SymbolKind::CLASS,
+        // A decision is the modelling concept this language exists for. VARIABLE is the closest LSP
+        // kind, and the detail line carries what it actually is.
+        LocalKind::Decision | LocalKind::Variable => SymbolKind::VARIABLE,
+        LocalKind::Module | LocalKind::Import => SymbolKind::MODULE,
+    }
 }
 
 fn stdlib_item(symbol: &Symbol) -> CompletionItem {

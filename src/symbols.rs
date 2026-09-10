@@ -9,6 +9,8 @@
 //! over-broad candidate list costs a spurious suggestion while a too-narrow one hides the name the
 //! user wants.
 
+use tower_lsp_server::ls_types::Range;
+
 use crate::document::Document;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,6 +39,166 @@ pub enum LocalKind {
     /// `Module` because it resolves one level deeper: to a declaration inside that file, not to the
     /// file's own surface.
     Import,
+}
+
+/// A declaration and what it contains, for an outline.
+///
+/// Nesting is why this exists rather than reusing `top_level`: a class with eight fields renders as
+/// eight siblings in a flat list, and the outline of a Hexaly model is mostly "which function, and
+/// what does it decide" — in the production model this targets, every decision lives inside a
+/// function, so a flat list of decisions has no structure to show.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Outline {
+    pub name: String,
+    pub kind: LocalKind,
+    pub detail: String,
+    /// The whole declaration, for selecting it.
+    pub range: Range,
+    /// Just the name, for placing the cursor.
+    pub selection: Range,
+    pub children: Vec<Outline>,
+}
+
+/// The document's structure as a tree.
+///
+/// Classes contain their members; functions contain the decisions and objectives declared inside
+/// them. Statements are not recursed into beyond that: a decision inside a nested `for` inside a
+/// function is still shown under the function, because the intervening block is not something a
+/// reader navigates to.
+pub fn outline(document: &Document) -> Vec<Outline> {
+    let tree = document.tree();
+    let mut cursor = tree.walk();
+
+    tree.root_node()
+        .children(&mut cursor)
+        .flat_map(|node| outline_node(document, node))
+        .collect()
+}
+
+fn outline_node(document: &Document, node: tree_sitter::Node<'_>) -> Vec<Outline> {
+    // A top-level `local a = 1, b = 2;` wraps its declarators, so that one node is descended into.
+    if node.kind() == "local_declaration" {
+        let mut cursor = node.walk();
+        return node
+            .children(&mut cursor)
+            .flat_map(|child| outline_node(document, child))
+            .collect();
+    }
+
+    let Some(local) = declarations(document, node).into_iter().next() else {
+        return Vec::new();
+    };
+
+    // `use` statements are bindings, not structure: an outline listing them buries the declarations
+    // a reader opened it to find.
+    if matches!(local.kind, LocalKind::Module | LocalKind::Import) {
+        return Vec::new();
+    }
+
+    let children = match node.kind() {
+        "class_declaration" => node
+            .child_by_field_name("body")
+            .map(|body| contained(document, body))
+            .unwrap_or_default(),
+        "function_declaration" => node
+            .child_by_field_name("body")
+            .map(|body| contained(document, body))
+            .unwrap_or_default(),
+        _ => Vec::new(),
+    };
+
+    let selection = node
+        .child_by_field_name("name")
+        .map(|name| document.range(name))
+        .unwrap_or_else(|| document.range(node));
+
+    vec![Outline {
+        name: local.name,
+        kind: local.kind,
+        detail: local.detail,
+        range: document.range(node),
+        selection,
+        children,
+    }]
+}
+
+/// Declarations inside a class body or a function body, one level down.
+///
+/// `objective_statement` is included even though it has no name, because `minimize` and `maximize`
+/// are the point of a model and a reader looks for them: they are labelled by their direction.
+fn contained(document: &Document, body: tree_sitter::Node<'_>) -> Vec<Outline> {
+    let mut cursor = body.walk();
+    let mut stack: Vec<tree_sitter::Node> = body.children(&mut cursor).collect();
+    let mut found = Vec::new();
+
+    while let Some(node) = stack.pop() {
+        if node.kind() == "objective_statement" {
+            if let Some(direction) = node.child_by_field_name("direction") {
+                found.push(Outline {
+                    name: document.node_text(direction).unwrap_or("objective").to_string(),
+                    kind: LocalKind::Decision,
+                    detail: summarise(document, node),
+                    range: document.range(node),
+                    selection: document.range(direction),
+                    children: Vec::new(),
+                });
+            }
+            continue;
+        }
+
+        // Only decisions and members are worth listing; a plain local inside a function body is
+        // noise in an outline, however useful it is in completion.
+        let interesting = matches!(
+            node.kind(),
+            "indexed_declaration" | "field_declaration" | "method_declaration" | "constructor_declaration"
+        );
+
+        if interesting {
+            found.extend(outline_member(document, node));
+            continue;
+        }
+
+        // Descend through control flow: a decision inside a `for` is still the function's structure.
+        if matches!(
+            node.kind(),
+            "for_statement" | "if_statement" | "while_statement" | "block"
+        ) {
+            let mut inner = node.walk();
+            stack.extend(node.children(&mut inner));
+        }
+    }
+
+    found.sort_by_key(|item| (item.range.start.line, item.range.start.character));
+    found
+}
+
+fn outline_member(document: &Document, node: tree_sitter::Node<'_>) -> Option<Outline> {
+    let kind = match node.kind() {
+        "indexed_declaration" => LocalKind::Decision,
+        "field_declaration" => LocalKind::Variable,
+        "method_declaration" => LocalKind::Function,
+        "constructor_declaration" => LocalKind::Function,
+        _ => return None,
+    };
+
+    // A constructor has no name field; it is named for what it is.
+    let name_node = node.child_by_field_name("name");
+    let name = match name_node {
+        Some(name) => document.node_text(name)?.to_string(),
+        None if node.kind() == "constructor_declaration" => "constructor".to_string(),
+        None => return None,
+    };
+
+    Some(Outline {
+        name,
+        kind,
+        detail: summarise(document, node),
+        range: document.range(node),
+        selection: name_node
+            .map(|name| document.range(name))
+            .unwrap_or_else(|| document.range(node)),
+        children: Vec::new(),
+    })
 }
 
 /// Declarations at the top level of the file only.

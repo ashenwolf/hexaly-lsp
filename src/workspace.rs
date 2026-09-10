@@ -61,6 +61,74 @@ impl Workspace {
         self.load(parser, &path).map(|module| module.exports.as_slice())
     }
 
+    /// Every declaration in every `.hxm` file under the workspace roots, for `workspace/symbol`.
+    ///
+    /// This is the half of the outline work that `outline.scm` cannot do at all: jumping to a
+    /// declaration in one of a dozen files without opening them. The production model this targets
+    /// spreads ~90 functions across 12 files, which is exactly the scale where remembering *which*
+    /// file something is in stops being free.
+    ///
+    /// Matching is a case-insensitive substring, which is what editors expect from a symbol prompt
+    /// and cheap enough at this scale that no index needs maintaining between calls.
+    pub fn symbols(&mut self, parser: &mut tree_sitter::Parser, query: &str) -> Vec<(PathBuf, Local)> {
+        let needle = query.to_lowercase();
+
+        self.hxm_files()
+            .into_iter()
+            .flat_map(|path| {
+                let declarations = self
+                    .load(parser, &path)
+                    .map(|module| module.exports.clone())
+                    .unwrap_or_default();
+
+                declarations
+                    .into_iter()
+                    .filter(|local| needle.is_empty() || local.name.to_lowercase().contains(&needle))
+                    .map(move |local| (path.clone(), local))
+                    .collect::<Vec<_>>()
+            })
+            .collect()
+    }
+
+    /// Every `.hxm` file under the roots.
+    ///
+    /// Depth is capped rather than unbounded: a workspace root can be a whole monorepo, and walking
+    /// it on every symbol query would make the feature feel broken on exactly the large projects
+    /// where it is most wanted.
+    fn hxm_files(&self) -> Vec<PathBuf> {
+        const MAX_DEPTH: usize = 6;
+
+        let mut found = Vec::new();
+        let mut queue: Vec<(PathBuf, usize)> = self.roots.iter().cloned().map(|root| (root, 0)).collect();
+
+        while let Some((directory, depth)) = queue.pop() {
+            let Ok(entries) = std::fs::read_dir(&directory) else {
+                continue;
+            };
+
+            for entry in entries.flatten() {
+                let path = entry.path();
+
+                if path.is_dir() {
+                    // Skipped by name: these hold build output and dependencies, never a model the
+                    // user would navigate to, and they are where the file count explodes.
+                    let skip = path.file_name().and_then(|name| name.to_str()).is_some_and(|name| {
+                        name.starts_with('.') || matches!(name, "build" | "target" | "node_modules" | "env")
+                    });
+
+                    if !skip && depth < MAX_DEPTH {
+                        queue.push((path, depth + 1));
+                    }
+                } else if path.extension().is_some_and(|extension| extension == "hxm") {
+                    found.push(path);
+                }
+            }
+        }
+
+        found.sort();
+        found
+    }
+
     /// The members of a class imported from another file, for `use Name from path;`.
     ///
     /// One level deeper than `exports`: that returns a module's own declarations, this looks inside
