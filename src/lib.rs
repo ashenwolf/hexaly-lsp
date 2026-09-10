@@ -9,10 +9,12 @@
 pub mod diagnostics;
 pub mod discovery;
 pub mod document;
+pub mod format;
 pub mod language;
 pub mod server;
 pub mod stdlib;
 pub mod symbols;
+pub mod token;
 pub mod workspace;
 
 /// The grammar, ready to parse. Every parser in the process is built here so a version mismatch

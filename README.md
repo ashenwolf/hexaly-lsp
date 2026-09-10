@@ -27,8 +27,35 @@ Completion, hover and signature help cover **396 standard-library symbols** — 
 parameters, every documented overload, and the prose from Hexaly's own reference — plus the
 declarations in the file being edited. After a dot the candidates narrow to that module or class.
 
-Go-to-definition is planned. Rename and find-references are not: they need scope analysis whose
-cost is hard to justify for this project.
+Go-to-definition, document and workspace symbols, and signature help with active-parameter tracking
+all work, across module boundaries. Rename and find-references are not planned: they need scope
+analysis whose cost is hard to justify for this project.
+
+### Formatting
+
+A *normaliser*, not a pretty-printer, and the distinction is the whole design. A pretty-printer
+parses to a tree, discards the layout and re-emits — better output, but any gap in the grammar
+becomes mangled code, and this grammar has been wrong three times already. Formatting is the one
+feature whose failure mode costs the user their work.
+
+So line structure and blank lines are preserved exactly. Only two things change: each line's leading
+whitespace, and the spacing between tokens on it. Where a statement breaks, and which declarations
+are grouped, is the author's decision and survives untouched — including Hexaly's own habit of
+writing `x_0 <- bool(); x_1 <- bool();` four to a line.
+
+Every format is checked before it is offered: **the output must tokenize identically to the input.**
+If a single token differs, the server returns no edits rather than a destructive one. That turns "the
+rules are conservative" into a property verified on every keystroke of every file.
+
+The conventions were measured from the 66 models Hexaly ships, not chosen: 4-space indent, same-line
+brace, `, ` between arguments, spaced binary operators, tight `...` ranges, and `if (` but `bool()`.
+Where the corpus has no convention the formatter has no opinion — multiplicative spacing (`*` is
+spaced 70 times against 9 tight; `/` is 12 against 15) and continuation-line indentation (+0 in 191
+cases, +8 in 67, +4 in only 13) are left exactly as written.
+
+All 66 official models come back byte-identical. Range formatting is deliberately not offered:
+indentation depends on brace depth accumulated from the top of the file, which a selection does not
+know.
 
 ### Why no licence is needed
 
@@ -68,9 +95,10 @@ error node with no member expression in it. A dot after an *expression* (`f().`)
 resolving it needs type inference this server does not do, and guessing would be worse than
 offering the unqualified list.
 
-Signature help does not highlight the active parameter. Determining it means counting commas at the
-right nesting depth inside a call that may not parse yet, and a confidently wrong highlight is worse
-than none.
+Signature help tracks the active parameter by counting commas at the right nesting depth, skipping
+string literals, and preferring an inner call to an outer one. It reads the text rather than the tree
+for the same reason completion does: `computeCost(` has no call node to find yet, and an incomplete
+call is exactly when signature help earns its keep.
 
 ## Install
 
@@ -131,18 +159,31 @@ language-servers = ["hexaly-lsp"]
 ### Zed
 
 Install the [zed-hexaly](https://github.com/ashenwolf/zed-hexaly) extension, which carries the
-grammar and queries and launches this server.
+grammar and queries and launches this server. To format on save, add to your settings:
 
-### VS Code
+```json
+{
+  "languages": {
+    "Hexaly": { "formatter": "language_server", "format_on_save": "on" }
+  }
+}
+```
 
-VS Code ships no generic LSP client, so it needs a client extension — unlike the editors above, it
-cannot be pointed at a binary. Either install a generic bridge such as
-[glspc](https://marketplace.visualstudio.com/items?itemName=torokati44.glspc) and set the server
-path in settings, or write ~20 lines against `vscode-languageclient`.
+### VS Code and Cursor
 
-Note that Hexaly publishes an official VS Code extension with its own TextMate grammar. There this
-server adds diagnostics on top of existing highlighting rather than providing it, so a client
-extension should contribute only the LSP.
+**Use Hexaly's own extension, not this server.** The official
+[Hexaly extension](https://marketplace.visualstudio.com/items?itemName=hexaly.hexaly) is not the
+TextMate-grammar wrapper it appears to be: it bundles a complete Hexaly compiler front-end in
+JavaScript — lexer, parser, AST, symbol tables — and provides diagnostics, completion, hover,
+signature help, definition, references, rename, document highlight, semantic tokens, a formatter and
+a debug adapter. That is a superset of this server, in-process and with no Hexaly install needed.
+
+One gap: **Cursor uses Open VSX**, and Hexaly publishes only to the Microsoft Marketplace, so it does
+not appear in Cursor's extension search. Download the `.vsix` from the marketplace and use
+`Extensions: Install from VSIX`.
+
+This server exists for editors that cannot run that extension — Zed, Neovim, Helix, Emacs — because
+neither a TextMate grammar nor a VS Code extension host is available to them.
 
 ### Emacs
 

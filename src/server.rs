@@ -7,17 +7,18 @@ use tokio::sync::Mutex;
 use tower_lsp_server::ls_types::{
     CompletionOptions, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    DocumentSymbolParams, DocumentSymbolResponse, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
-    HoverProviderCapability, InitializeParams, InitializeResult, InitializedParams, MessageType, OneOf,
-    PositionEncodingKind, ServerCapabilities, ServerInfo, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Uri, WorkspaceSymbolParams, WorkspaceSymbolResponse,
+    DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, GotoDefinitionParams,
+    GotoDefinitionResponse, Hover, HoverParams, HoverProviderCapability, InitializeParams, InitializeResult,
+    InitializedParams, MessageType, OneOf, PositionEncodingKind, ServerCapabilities, ServerInfo, SignatureHelp,
+    SignatureHelpOptions, SignatureHelpParams, TextDocumentSyncCapability, TextDocumentSyncKind, TextEdit, Uri,
+    WorkspaceSymbolParams, WorkspaceSymbolResponse,
 };
 use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 
 use crate::diagnostics::{hexaly, syntax};
 use crate::discovery::{self, Discovery};
 use crate::document::Document;
-use crate::language;
+use crate::{format, language};
 use crate::workspace::Workspace;
 
 /// The parser and the document map live under one lock, taken for the whole of each handler.
@@ -167,6 +168,11 @@ impl LanguageServer for Backend {
                 definition_provider: Some(OneOf::Left(true)),
                 document_symbol_provider: Some(OneOf::Left(true)),
                 workspace_symbol_provider: Some(OneOf::Left(true)),
+                // Whole-document only. Range formatting is deliberately not advertised: indentation
+                // depends on the brace depth accumulated from the top of the file, which a range in
+                // isolation does not know, so formatting a selection could indent it to the wrong
+                // level.
+                document_formatting_provider: Some(OneOf::Left(true)),
                 signature_help_provider: Some(SignatureHelpOptions {
                     trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
                     ..SignatureHelpOptions::default()
@@ -283,6 +289,28 @@ impl LanguageServer for Backend {
 
     async fn shutdown(&self) -> jsonrpc::Result<()> {
         Ok(())
+    }
+
+    async fn formatting(&self, params: DocumentFormattingParams) -> jsonrpc::Result<Option<Vec<TextEdit>>> {
+        let state = self.state.lock().await;
+
+        let Some(document) = state.documents.get(&params.text_document.uri) else {
+            return Ok(None);
+        };
+
+        // `None` from the formatter means either "already formatted" or "the result could not be
+        // verified", and both are answered with an empty edit list: the client should change nothing.
+        let Some(formatted) = format::format(document.text()) else {
+            return Ok(Some(Vec::new()));
+        };
+
+        // One edit replacing the whole document. A minimal diff would be friendlier to an editor's
+        // undo history, but computing one is a second thing that can be wrong about the same text -
+        // and the token guard already proved this replacement preserves every token.
+        Ok(Some(vec![TextEdit {
+            range: document.whole_range(),
+            new_text: formatted,
+        }]))
     }
 
     async fn document_symbol(&self, params: DocumentSymbolParams) -> jsonrpc::Result<Option<DocumentSymbolResponse>> {

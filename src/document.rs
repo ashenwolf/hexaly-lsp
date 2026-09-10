@@ -327,6 +327,21 @@ impl Document {
         None
     }
 
+    /// The whole document, as a range.
+    ///
+    /// For formatting, which replaces everything: the end must be past the last character, and a
+    /// position one line beyond the last is how LSP spells "end of document" without needing to know
+    /// that line's length.
+    pub fn whole_range(&self) -> Range {
+        Range {
+            start: Position { line: 0, character: 0 },
+            end: Position {
+                line: self.text.lines().count() as u32,
+                character: 0,
+            },
+        }
+    }
+
     /// The whole of `line`, as a range. The fallback for a compiler diagnostic: Hexaly reports no
     /// column, and a zero-width range at column 0 renders as an invisible squiggle.
     pub fn line_range(&self, line: u32) -> Range {
