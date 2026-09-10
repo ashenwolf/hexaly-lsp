@@ -1,0 +1,124 @@
+name: Release
+
+# Tag-driven: `git tag v0.1.0 && git push --tags` builds every target and publishes a release.
+#
+# This exists because `cargo install --git` was the only way to get the server, which means anyone
+# wanting to try it first has to install Rust. That is a wall for a colleague, and it is also where
+# every install problem in this project has come from - a compiled binary they can download removes
+# both.
+on:
+  push:
+    tags: ["v*"]
+  # Buildable without tagging, so a change to this workflow can be verified before a release depends
+  # on it.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Every target is reported, rather than the first failure hiding the rest.
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, target: aarch64-apple-darwin, runnable: true }
+          # The macOS runners are arm64, and an x86_64 binary needs Rosetta they do not have, so this
+          # one is built but cannot be run here.
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, runnable: true }
+          # GitHub gives public repositories no ARM Linux runner, so this one is cross-compiled in a
+          # container. Sergii's dev boxes are aarch64, so it is not optional.
+          - { os: ubuntu-latest, target: aarch64-unknown-linux-gnu, cross: true }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, runnable: true, ext: ".exe" }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      # `cross` runs the build in a container with the right sysroot. Hand-installing a gcc
+      # cross-toolchain is the usual alternative and mismatches libc in ways that only surface at
+      # link time.
+      - name: Install cross
+        if: matrix.cross
+        run: cargo install cross --locked
+
+      - name: Build
+        shell: bash
+        run: |
+          builder=${{ matrix.cross && 'cross' || 'cargo' }}
+          "$builder" build --release --locked --target ${{ matrix.target }}
+
+      # Only a natively-runnable build can execute its own binary. Where that holds, checking the
+      # version makes a broken artifact fail the build instead of reaching a user's editor.
+      - name: Verify the binary reports its version
+        if: matrix.runnable
+        shell: bash
+        run: ./target/${{ matrix.target }}/release/hexaly-lsp${{ matrix.ext }} --version
+
+      # Archiving happens before upload deliberately: uploading loose files strips the executable
+      # bit, while the bit inside an archive survives the round trip.
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          # A flat archive: the extension and any hand-installer expect the binary at the top, not
+          # nested under a target-named directory.
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "dist/hexaly-lsp-${{ matrix.target }}.zip" \
+              "./target/${{ matrix.target }}/release/hexaly-lsp.exe" README.md LICENSE
+          else
+            tar -czf "dist/hexaly-lsp-${{ matrix.target }}.tar.gz" \
+              -C "target/${{ matrix.target }}/release" hexaly-lsp \
+              -C "$GITHUB_WORKSPACE" README.md LICENSE
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hexaly-lsp-${{ matrix.target }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    # A dispatch run builds and stops there; only a tag publishes.
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      # Checksums, so someone installing by hand can verify what they downloaded - and so a corrupted
+      # asset is distinguishable from a broken build.
+      - name: Checksum
+        run: |
+          cd dist
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            Language server for Hexaly Modeler models (`.hxm`).
+
+            **No Hexaly licence is required.** Syntax diagnostics, completion, hover, signature help
+            and symbols need no Hexaly installation at all; compiler-backed diagnostics need one, but
+            never consume a licence seat.
+
+            Download the archive for your platform, put `hexaly-lsp` on your `$PATH`, and see the
+            README for editor configuration. Verify with `sha256sum -c SHA256SUMS`.
