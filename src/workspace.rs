@@ -102,10 +102,15 @@ impl Workspace {
 
 /// What a module offers to an importer.
 ///
-/// Its own `use` statements are excluded: importing a module does not re-export what it imports, so
-/// offering `fn.io` would suggest a path that does not exist.
+/// Only top-level declarations. `symbols::locals` walks the whole tree, which is right for
+/// completing inside the file being edited - a local four lines up is exactly what you want - but
+/// wrong across a module boundary: a loop counter inside one of `fn`'s functions is not reachable as
+/// `fn.i`, and offering it is a suggestion that cannot compile.
+///
+/// Its own `use` statements are excluded for the same reason: importing a module does not re-export
+/// what it imports, so `fn.io` would suggest a path that does not exist.
 fn exported(document: &Document) -> Vec<Local> {
-    symbols::locals(document)
+    symbols::top_level(document)
         .into_iter()
         .filter(|local| local.kind != LocalKind::Module)
         .collect()

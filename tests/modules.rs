@@ -18,12 +18,15 @@ fn fixture(name: &str) -> PathBuf {
     std::fs::create_dir_all(root.join("utils")).expect("temp dir");
     std::fs::create_dir_all(root.join("inputs")).expect("temp dir");
 
+    // `use` must precede every declaration in HXM - a misplaced one is a syntax error that breaks
+    // the parse of everything after it - so the fixture is ordered as real code has to be.
     std::fs::write(
         root.join("utils/functionalUtils.hxm"),
-        "function listContains(list, item) { return false; }\n\
+        "use io;\n\
+         local moduleWide = 7;\n\
+         function listContains(list, item) {\n    local counter = 0;\n    return false;\n}\n\
          function listMap(list, f) { return list; }\n\
-         function filter(list, predicate) { return list; }\n\
-         use io;\n",
+         function filter(list, predicate) { return list; }\n",
     )
     .expect("write");
 
@@ -117,6 +120,17 @@ fn completion_after_a_module_alias_lists_that_modules_functions() {
     assert!(labels.contains(&"filter"), "got {labels:?}");
     assert!(labels.contains(&"listMap"), "got {labels:?}");
 
+    // A top-level `local` IS part of the module's surface.
+    assert!(labels.contains(&"moduleWide"), "top-level local missing: {labels:?}");
+
+    // A variable inside one of the module's functions is NOT reachable as `fn.counter`, so offering
+    // it would be a suggestion that cannot compile. Found on the real model, where `fn.` listed loop
+    // counters alongside the functions.
+    assert!(
+        !labels.contains(&"counter"),
+        "a variable inside a function body leaked into the module surface: {labels:?}"
+    );
+
     // The imported module's own `use io;` is not re-exported: importing a module does not make its
     // imports reachable through it.
     assert!(
@@ -192,7 +206,15 @@ fn definition_crosses_a_use_boundary() {
         "got {}",
         location.uri.as_str()
     );
-    assert_eq!(location.range.start.line, 0, "listContains is on the first line");
+
+    // The line is derived from the fixture rather than hard-coded, so reordering it cannot make this
+    // assert a stale number - which is exactly what happened when `use io;` moved to the top.
+    let target = std::fs::read_to_string(root.join("utils/functionalUtils.hxm")).unwrap();
+    let expected = target
+        .lines()
+        .position(|line| line.contains("function listContains"))
+        .expect("listContains is declared in the fixture") as u32;
+    assert_eq!(location.range.start.line, expected);
 
     let _ = std::fs::remove_dir_all(&root);
 }

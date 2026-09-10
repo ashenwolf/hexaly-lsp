@@ -34,6 +34,44 @@ pub enum LocalKind {
     Module,
 }
 
+/// Declarations at the top level of the file only.
+///
+/// This is the module's public surface: what an importer can reach as `alias.name`. A variable
+/// declared inside a function body is not reachable that way, so including it would offer a
+/// candidate that cannot compile.
+///
+/// Distinct from `locals`, which walks the whole tree on purpose — inside the file being edited, a
+/// name declared four lines up in the same function is exactly what completion should offer.
+pub fn top_level(document: &Document) -> Vec<Local> {
+    let tree = document.tree();
+    let mut cursor = tree.walk();
+    let mut inner = tree.walk();
+
+    let mut found: Vec<Local> = tree
+        .root_node()
+        .children(&mut cursor)
+        .flat_map(|node| {
+            // A top-level `local a = 1, b = 2;` wraps its declarators in a `local_declaration`, so
+            // that one node is descended into. Nothing else is: a `block` or a function body would
+            // reintroduce exactly the names this function exists to exclude.
+            let children: Vec<tree_sitter::Node> = if node.kind() == "local_declaration" {
+                node.children(&mut inner).collect()
+            } else {
+                vec![node]
+            };
+
+            children
+                .into_iter()
+                .filter_map(|child| declaration(document, child))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+
+    found.sort_by_key(|local| local.name.clone());
+    found.dedup_by(|left, right| left.name == right.name);
+    found
+}
+
 /// Declarations in `document`, in source order and deduplicated by name.
 ///
 /// The node kinds come from the grammar: `function_declaration`, `class_declaration`,
