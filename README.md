@@ -74,12 +74,27 @@ than none.
 
 ## Install
 
+Download the archive for your platform from the
+[latest release](https://github.com/ashenwolf/hexaly-lsp/releases/latest), unpack it, and put
+`hexaly-lsp` somewhere on your `$PATH`:
+
 ```sh
-cargo install --git https://github.com/ashenwolf/hexaly-lsp
+tar -xzf hexaly-lsp-aarch64-apple-darwin.tar.gz
+mv hexaly-lsp ~/.local/bin/
+hexaly-lsp --version
 ```
 
-Or build from a clone with `cargo build --release`; the binary lands in
-`target/release/hexaly-lsp`.
+Releases cover macOS (arm64, x86_64), Linux (x86_64, arm64) and Windows (x86_64). Each release also
+carries `SHA256SUMS`, so a download can be checked with `sha256sum -c SHA256SUMS`.
+
+The Zed extension downloads this automatically — if you use Zed, install the extension and skip this
+section entirely.
+
+With a Rust toolchain, `cargo install --git https://github.com/ashenwolf/hexaly-lsp` also works, and
+is the right choice if you intend to change the server. Note that it installs to `~/.cargo/bin`,
+which is **not** on the `$PATH` a GUI editor inherits on either macOS or Linux — that directory is
+added by a shell profile, which only affects processes started from a shell. Editors launched from
+Dock, Spotlight or a desktop entry will not find it there unless you configure the path explicitly.
 
 ## Editor setup
 
