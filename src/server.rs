@@ -7,9 +7,9 @@ use tokio::sync::Mutex;
 use tower_lsp_server::ls_types::{
     CompletionOptions, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    Hover, HoverParams, HoverProviderCapability, InitializeParams, InitializeResult, InitializedParams, MessageType,
-    PositionEncodingKind, ServerCapabilities, ServerInfo, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, HoverProviderCapability, InitializeParams,
+    InitializeResult, InitializedParams, MessageType, OneOf, PositionEncodingKind, ServerCapabilities, ServerInfo,
+    SignatureHelp, SignatureHelpOptions, SignatureHelpParams, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
 };
 use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 
@@ -17,6 +17,7 @@ use crate::diagnostics::{hexaly, syntax};
 use crate::discovery::{self, Discovery};
 use crate::document::Document;
 use crate::language;
+use crate::workspace::Workspace;
 
 /// The parser and the document map live under one lock, taken for the whole of each handler.
 ///
@@ -27,6 +28,8 @@ use crate::language;
 struct State {
     parser: tree_sitter::Parser,
     documents: HashMap<Uri, Document>,
+    /// Modules resolved from disk. Under the same lock as the parser because loading one needs it.
+    workspace: Workspace,
 }
 
 pub struct Backend {
@@ -44,6 +47,7 @@ impl Backend {
             state: Mutex::new(State {
                 parser: crate::parser(),
                 documents: HashMap::new(),
+                workspace: Workspace::default(),
             }),
             hexaly: Mutex::new(Discovery::Missing),
         }
@@ -130,6 +134,20 @@ impl LanguageServer for Backend {
 
         *self.hexaly.lock().await = discovery::locate(configured);
 
+        // Workspace roots are where a dotted module path is resolved from. Hexaly resolves `use`
+        // relative to the entry point's directory, which the server cannot identify, so the roots
+        // are one of the two places searched - the other being the importing file's ancestors.
+        let roots: Vec<PathBuf> = params
+            .workspace_folders
+            .into_iter()
+            .flatten()
+            .filter_map(|folder| folder.uri.to_file_path().map(|path| path.to_path_buf()))
+            .collect();
+
+        if !roots.is_empty() {
+            self.state.lock().await.workspace.set_roots(roots);
+        }
+
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
                 // UTF-16 is the LSP default, stated rather than left implicit because every
@@ -145,6 +163,7 @@ impl LanguageServer for Backend {
                     ..CompletionOptions::default()
                 }),
                 hover_provider: Some(HoverProviderCapability::Simple(true)),
+                definition_provider: Some(OneOf::Left(true)),
                 signature_help_provider: Some(SignatureHelpOptions {
                     trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
                     ..SignatureHelpOptions::default()
@@ -181,16 +200,47 @@ impl LanguageServer for Backend {
 
     async fn completion(&self, params: CompletionParams) -> jsonrpc::Result<Option<CompletionResponse>> {
         let position = params.text_document_position;
-        let state = self.state.lock().await;
+        let uri = position.text_document.uri;
+        let mut state = self.state.lock().await;
+        let State {
+            parser,
+            documents,
+            workspace,
+        } = &mut *state;
 
-        let Some(document) = state.documents.get(&position.text_document.uri) else {
+        let Some(document) = documents.get(&uri) else {
             return Ok(None);
         };
 
+        let path = uri.to_file_path();
         Ok(Some(CompletionResponse::Array(language::completions(
             document,
             position.position,
+            path.as_deref(),
+            workspace,
+            parser,
         ))))
+    }
+
+    async fn goto_definition(&self, params: GotoDefinitionParams) -> jsonrpc::Result<Option<GotoDefinitionResponse>> {
+        let position = params.text_document_position_params;
+        let uri = position.text_document.uri;
+        let mut state = self.state.lock().await;
+        let State {
+            parser,
+            documents,
+            workspace,
+        } = &mut *state;
+
+        let Some(document) = documents.get(&uri) else {
+            return Ok(None);
+        };
+
+        let path = uri.to_file_path();
+        Ok(
+            language::definition(document, position.position, path.as_deref(), workspace, parser)
+                .map(GotoDefinitionResponse::Scalar),
+        )
     }
 
     async fn hover(&self, params: HoverParams) -> jsonrpc::Result<Option<Hover>> {
@@ -223,7 +273,7 @@ impl LanguageServer for Backend {
         let document = params.text_document;
         {
             let mut state = self.state.lock().await;
-            let State { parser, documents } = &mut *state;
+            let State { parser, documents, .. } = &mut *state;
             documents.insert(
                 document.uri.clone(),
                 Document::open(parser, document.text, document.version),
@@ -240,7 +290,7 @@ impl LanguageServer for Backend {
         let uri = params.text_document.uri;
         {
             let mut state = self.state.lock().await;
-            let State { parser, documents } = &mut *state;
+            let State { parser, documents, .. } = &mut *state;
             match documents.get_mut(&uri) {
                 Some(document) => {
                     document.apply(parser, params.content_changes, params.text_document.version);

@@ -13,6 +13,14 @@ fn open(text: &str) -> Document {
     Document::open(&mut parser, text.to_string(), 1)
 }
 
+/// Completion for a single-file case. These tests predate cross-file resolution and none of them
+/// import anything, so there is no path to resolve against and an empty workspace is correct.
+fn complete(document: &Document, position: Position) -> Vec<tower_lsp_server::ls_types::CompletionItem> {
+    let mut parser = hexaly_lsp::parser();
+    let mut workspace = hexaly_lsp::workspace::Workspace::default();
+    language::completions(document, position, None, &mut workspace, &mut parser)
+}
+
 fn at(line: u32, character: u32) -> Position {
     Position { line, character }
 }
@@ -60,7 +68,7 @@ fn variadic_signatures_keep_their_brackets() {
 #[test]
 fn a_dot_narrows_completion_to_that_container() {
     let document = open("use io;\nfunction main() {\n    io.\n}\n");
-    let items = language::completions(&document, at(2, 7));
+    let items = complete(&document, at(2, 7));
 
     assert!(!items.is_empty(), "no candidates after `io.`");
     // Members only. Offering 396 globals here would bury the handful that apply.
@@ -78,7 +86,7 @@ fn a_dot_narrows_completion_to_that_container() {
 #[test]
 fn unqualified_completion_offers_locals_globals_and_containers() {
     let document = open("use io;\nfunction model() {\n    nbItems = 5;\n    x[i in 0...nbItems] <- bool();\n    \n}\n");
-    let items = language::completions(&document, at(4, 4));
+    let items = complete(&document, at(4, 4));
 
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
 
@@ -94,7 +102,7 @@ fn unqualified_completion_offers_locals_globals_and_containers() {
 #[test]
 fn own_declarations_sort_before_the_library() {
     let document = open("function model() {\n    chosen[i in 0...3] <- bool();\n    \n}\n");
-    let items = language::completions(&document, at(2, 4));
+    let items = complete(&document, at(2, 4));
 
     let own = items.iter().find(|item| item.label == "chosen").expect("own decision");
     let library = items
@@ -118,7 +126,7 @@ fn own_declarations_sort_before_the_library() {
 #[test]
 fn completion_kinds_are_varied_not_all_keywords() {
     let document = open("function model() {\n    \n}\n");
-    let items = language::completions(&document, at(1, 4));
+    let items = complete(&document, at(1, 4));
 
     let kinds: Vec<CompletionItemKind> = items.iter().filter_map(|item| item.kind).collect();
     let distinct = kinds
@@ -141,7 +149,7 @@ fn a_dot_narrows_completion_mid_word_too() {
     // The commoner case than a bare dot: the user has typed part of the member name. `io.openR` does
     // not parse as a member expression either, so this also has to come from the text.
     let document = open("use io;\nfunction main() {\n    reader = io.openR\n}\n");
-    let items = language::completions(&document, at(2, 21));
+    let items = complete(&document, at(2, 21));
 
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
     assert!(labels.contains(&"openRead"), "got {labels:?}");
@@ -154,7 +162,7 @@ fn a_dot_after_an_expression_is_not_treated_as_a_container() {
     // `f().` and `x[0].` are method calls on a value whose type this server cannot infer, so there is
     // no honest candidate list. Guessing one would be worse than offering globals.
     let document = open("function main() {\n    y = f().\n}\n");
-    let items = language::completions(&document, at(1, 12));
+    let items = complete(&document, at(1, 12));
 
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
     assert!(labels.contains(&"println"), "expected the unqualified list: {labels:?}");
@@ -199,7 +207,7 @@ fn completion_offers_the_modelling_keywords() {
     // correctly absent from the scraped artifact - and they are also what a modeller types most.
     // Completion without them would feel broken however good the library coverage was.
     let document = open("function model() {\n    \n}\n");
-    let items = language::completions(&document, at(1, 4));
+    let items = complete(&document, at(1, 4));
 
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
     for keyword in ["constraint", "minimize", "maximize", "function", "local"] {

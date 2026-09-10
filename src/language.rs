@@ -4,14 +4,17 @@
 //! declarations. Keeping them in one module makes it obvious when they disagree about what the
 //! cursor is on, which is the usual way these features drift apart.
 
+use std::path::Path;
+
 use tower_lsp_server::ls_types::{
-    CompletionItem, CompletionItemKind, Documentation, Hover, HoverContents, MarkupContent, MarkupKind,
-    ParameterInformation, ParameterLabel, Position, SignatureHelp, SignatureInformation,
+    CompletionItem, CompletionItemKind, Documentation, Hover, HoverContents, Location, MarkupContent, MarkupKind,
+    ParameterInformation, ParameterLabel, Position, Range, SignatureHelp, SignatureInformation, Uri,
 };
 
 use crate::document::Document;
 use crate::stdlib::{self, Kind, Symbol};
 use crate::symbols::{self, LocalKind};
+use crate::workspace::Workspace;
 
 /// Candidates at `position`.
 ///
@@ -65,12 +68,23 @@ const KEYWORDS: &[&str] = &[
 
 /// Candidates at `position`.
 ///
-/// After a dot the list is the members of that container and nothing else, since offering globals
-/// there would bury the handful of relevant names. Otherwise it is the document's own declarations
-/// first, then keywords, the library's globals, and the containers that can start a qualified call.
-pub fn completions(document: &Document, position: Position) -> Vec<CompletionItem> {
+/// After a dot the list is that container's members and nothing else, since offering globals there
+/// would bury the handful of relevant names. Resolution is tried in order of specificity: a module
+/// alias in this file, then a class declared in this file, then the standard library. That order
+/// matters because the project's own names shadow nothing but are what the user reaches for most —
+/// in a real model, `fn.listContains` and `inputs.numIntervals` outnumber every stdlib call.
+///
+/// `workspace` and `parser` are needed only for the cross-file case, and threaded rather than held
+/// because the server owns both.
+pub fn completions(
+    document: &Document,
+    position: Position,
+    path: Option<&Path>,
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+) -> Vec<CompletionItem> {
     if let Some(qualifier) = document.qualifier_at(position) {
-        return stdlib::members(qualifier).map(stdlib_item).collect();
+        return qualified(document, qualifier, path, workspace, parser);
     }
 
     let locals = symbols::locals(document).into_iter().map(local_item);
@@ -86,6 +100,36 @@ pub fn completions(document: &Document, position: Position) -> Vec<CompletionIte
         .collect::<Vec<_>>();
 
     locals.chain(keywords).chain(globals).chain(containers).collect()
+}
+
+fn qualified(
+    document: &Document,
+    qualifier: &str,
+    path: Option<&Path>,
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+) -> Vec<CompletionItem> {
+    // A module alias in this file, resolved to its file on disk. This is the case that matters most
+    // on a real model and needs no type inference, only name resolution.
+    let alias = symbols::locals(document)
+        .into_iter()
+        .find(|local| local.kind == LocalKind::Module && local.name == qualifier && local.module_path.is_some());
+
+    if let (Some(local), Some(path)) = (alias.as_ref(), path) {
+        let module_path = local.module_path.as_deref().unwrap_or_default();
+        if let Some(exports) = workspace.exports(parser, path, module_path) {
+            return exports.iter().cloned().map(local_item).collect();
+        }
+    }
+
+    // A class declared in this file. `SpecialLocations.PICK_MANUAL` is reached far more often in a
+    // real model than any library class.
+    let class = symbols::class_members(document, qualifier);
+    if !class.is_empty() {
+        return class.into_iter().map(local_item).collect();
+    }
+
+    stdlib::members(qualifier).map(stdlib_item).collect()
 }
 
 /// Documentation for the symbol under the cursor.
@@ -184,6 +228,76 @@ pub fn signature_help(document: &Document, position: Position) -> Option<Signatu
         active_signature: Some(0),
         active_parameter: None,
     })
+}
+
+/// Where a name is defined.
+///
+/// Three cases, in the order they are tried: a declaration in this file, the file a `use` statement
+/// names, and a member of a module reached through an alias. The last is what makes
+/// `fn.listContains` navigable, and it reuses the module resolution completion already needs — no
+/// separate index.
+///
+/// Returns `None` for a stdlib symbol: hover already shows its documentation, and there is no source
+/// file to jump to.
+pub fn definition(
+    document: &Document,
+    position: Position,
+    path: Option<&Path>,
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+) -> Option<Location> {
+    let word = document.word_at(position)?;
+    let path = path?;
+
+    // A qualified reference: resolve the alias, then find the member inside that file.
+    if let Some(qualifier) = document.qualifier_at(position) {
+        let alias = symbols::locals(document)
+            .into_iter()
+            .find(|local| local.kind == LocalKind::Module && local.name == qualifier)?;
+
+        let module_path = alias.module_path.as_deref()?;
+        let target = workspace.resolve(path, module_path)?;
+
+        return member_location(parser, &target, word);
+    }
+
+    // An unqualified name declared in this file.
+    if let Some(range) = document.declaration_range(word) {
+        return Some(Location {
+            uri: uri_for(path)?,
+            range,
+        });
+    }
+
+    // The alias in a `use` statement: jump to the module it names.
+    let alias = symbols::locals(document)
+        .into_iter()
+        .find(|local| local.kind == LocalKind::Module && local.name == word)?;
+
+    let target = workspace.resolve(path, alias.module_path.as_deref()?)?;
+
+    Some(Location {
+        uri: uri_for(&target)?,
+        // The file itself rather than a position in it: the whole module is what the alias names.
+        range: Range::default(),
+    })
+}
+
+/// The location of `name` inside an already-resolved module file.
+fn member_location(parser: &mut tree_sitter::Parser, target: &Path, name: &str) -> Option<Location> {
+    let text = std::fs::read_to_string(target).ok()?;
+    let module = Document::open(parser, text, 0);
+
+    Some(Location {
+        uri: uri_for(target)?,
+        range: module.declaration_range(name)?,
+    })
+}
+
+/// A `file:` URI for a path. Built by hand because `Uri` here is a plain string type with no path
+/// conversion of its own, and the server only ever deals in absolute paths.
+fn uri_for(path: &Path) -> Option<Uri> {
+    format!("file://{}", path.to_str()?).parse().ok()
 }
 
 fn stdlib_item(symbol: &Symbol) -> CompletionItem {

@@ -208,6 +208,41 @@ impl Document {
         (!name.is_empty()).then_some(name)
     }
 
+    /// Range of the declaration of `name` in this document, if it declares one.
+    ///
+    /// The range covers the name itself rather than the whole declaration, so a jump lands the
+    /// cursor on the identifier instead of selecting a function body.
+    pub fn declaration_range(&self, name: &str) -> Option<Range> {
+        let tree = &self.tree;
+        let mut cursor = tree.walk();
+        let mut stack = vec![tree.root_node()];
+
+        while let Some(node) = stack.pop() {
+            let declares = matches!(
+                node.kind(),
+                "function_declaration"
+                    | "class_declaration"
+                    | "indexed_declaration"
+                    | "declarator"
+                    | "field_declaration"
+                    | "method_declaration"
+            );
+
+            let matched = declares
+                .then(|| node.child_by_field_name("name"))
+                .flatten()
+                .filter(|identifier| self.node_text(*identifier) == Some(name));
+
+            if let Some(identifier) = matched {
+                return Some(self.range(identifier));
+            }
+
+            stack.extend(node.children(&mut cursor));
+        }
+
+        None
+    }
+
     /// The whole of `line`, as a range. The fallback for a compiler diagnostic: Hexaly reports no
     /// column, and a zero-width range at column 0 renders as an invisible squiggle.
     pub fn line_range(&self, line: u32) -> Range {

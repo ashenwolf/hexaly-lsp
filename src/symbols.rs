@@ -17,6 +17,11 @@ pub struct Local {
     pub kind: LocalKind,
     /// The declaration as written, for the completion item's detail line.
     pub detail: String,
+    /// For a `use` statement, the dotted module path it names — which is what resolves to a file.
+    /// The alias is in `name`, so `use utils.functionalUtils as fn` gives `fn` and
+    /// `utils.functionalUtils` respectively, and both are needed: one to recognise `fn.` and the
+    /// other to find the file.
+    pub module_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,25 +79,81 @@ fn declaration(document: &Document, node: tree_sitter::Node<'_>) -> Option<Local
         name: text.to_string(),
         kind,
         detail: summarise(document, node),
+        module_path: None,
     })
 }
 
 /// A `use` statement contributes the name a qualified call would start with: the alias when there is
 /// one, otherwise the last segment of the module path (`use utils.fn;` is reached as `fn`).
 fn module(document: &Document, node: tree_sitter::Node<'_>) -> Option<Local> {
+    let path = node.child_by_field_name("module")?;
+    let module_path = document.node_text(path)?.to_string();
+
     let name = match node.child_by_field_name("alias") {
         Some(alias) => document.node_text(alias)?.to_string(),
-        None => {
-            let path = node.child_by_field_name("module")?;
-            document.node_text(path)?.rsplit('.').next()?.to_string()
-        }
+        None => module_path.rsplit('.').next()?.to_string(),
     };
 
     Some(Local {
         name,
         kind: LocalKind::Module,
         detail: summarise(document, node),
+        module_path: Some(module_path),
     })
+}
+
+/// Members of a class declared in this document, for completion after `ClassName.`.
+///
+/// Locally declared classes are containers just as much as the library's are: the production model
+/// this was built against reaches `SpecialLocations.PICK_MANUAL` far more often than any stdlib
+/// class. Fields, methods and the constructor all come from the grammar's `class_body`.
+pub fn class_members(document: &Document, class_name: &str) -> Vec<Local> {
+    let tree = document.tree();
+    let mut cursor = tree.walk();
+    let mut stack = vec![tree.root_node()];
+
+    while let Some(node) = stack.pop() {
+        if node.kind() == "class_declaration" {
+            let matches = node
+                .child_by_field_name("name")
+                .and_then(|name| document.node_text(name))
+                .is_some_and(|name| name == class_name);
+
+            if matches {
+                return node
+                    .child_by_field_name("body")
+                    .map(|body| members(document, body))
+                    .unwrap_or_default();
+            }
+        }
+
+        stack.extend(node.children(&mut cursor));
+    }
+
+    Vec::new()
+}
+
+fn members(document: &Document, body: tree_sitter::Node<'_>) -> Vec<Local> {
+    let mut cursor = body.walk();
+
+    body.children(&mut cursor)
+        .filter_map(|member| {
+            let kind = match member.kind() {
+                "field_declaration" => LocalKind::Variable,
+                "method_declaration" => LocalKind::Function,
+                _ => return None,
+            };
+
+            let name = member.child_by_field_name("name")?;
+
+            Some(Local {
+                name: document.node_text(name)?.to_string(),
+                kind,
+                detail: summarise(document, member),
+                module_path: None,
+            })
+        })
+        .collect()
 }
 
 /// The declaration's first line, trimmed. Enough to tell `x <- bool()` from `x <- float(0, 1)`

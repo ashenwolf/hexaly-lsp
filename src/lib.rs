@@ -13,6 +13,7 @@ pub mod language;
 pub mod server;
 pub mod stdlib;
 pub mod symbols;
+pub mod workspace;
 
 /// The grammar, ready to parse. Every parser in the process is built here so a version mismatch
 /// between the grammar and the tree-sitter runtime surfaces once, at startup.
