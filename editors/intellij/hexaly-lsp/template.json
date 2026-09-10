@@ -1,0 +1,17 @@
+{
+  "id": "hexaly-lsp",
+  "name": "Hexaly",
+  "programArgs": {
+    "default": "sh -c \"hexaly-lsp\"",
+    "windows": "cmd /c hexaly-lsp"
+  },
+  "fileTypeMappings": [
+    {
+      "fileType": {
+        "name": "Hexaly",
+        "patterns": ["*.hxm", "*.lsp"]
+      },
+      "languageId": "hexaly"
+    }
+  ]
+}

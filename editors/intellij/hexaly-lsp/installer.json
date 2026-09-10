@@ -1,0 +1,56 @@
+{
+  "id": "hexaly-lsp",
+  "name": "Hexaly Language Server",
+  "properties": {
+    "installDir": "$USER_HOME$/.lsp4ij/lsp/hexaly-lsp"
+  },
+  "check": {
+    "exec": {
+      "name": "Look for a hexaly-lsp already installed",
+      "command": "${server.command} --version",
+      "timeout": 5000
+    }
+  },
+  "run": {
+    "download": {
+      "name": "Download hexaly-lsp from GitHub releases",
+      "github": {
+        "owner": "ashenwolf",
+        "repository": "hexaly-lsp",
+        "prerelease": false,
+        "asset": {
+          "windows": "hexaly-lsp-x86_64-pc-windows-msvc.zip",
+          "unix": {
+            "amd64": "hexaly-lsp-x86_64-unknown-linux-gnu.tar.gz",
+            "arm64": "hexaly-lsp-aarch64-unknown-linux-gnu.tar.gz"
+          },
+          "mac": {
+            "aarch64": "hexaly-lsp-aarch64-apple-darwin.tar.gz",
+            "amd64": "hexaly-lsp-x86_64-apple-darwin.tar.gz"
+          }
+        }
+      },
+      "output": {
+        "dir": "${installDir}",
+        "file": {
+          "name": {
+            "windows": "hexaly-lsp.exe",
+            "unix": "hexaly-lsp",
+            "mac": "hexaly-lsp"
+          },
+          "executable": true
+        }
+      },
+      "onSuccess": {
+        "configureServer": {
+          "name": "Point the server command at the downloaded binary",
+          "command": {
+            "windows": "cmd /c \"${output.dir}/${output.file.name}\"",
+            "default": "sh -c \"${output.dir}/${output.file.name}\""
+          },
+          "update": true
+        }
+      }
+    }
+  }
+}

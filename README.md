@@ -115,8 +115,8 @@ hexaly-lsp --version
 Releases cover macOS (arm64, x86_64), Linux (x86_64, arm64) and Windows (x86_64). Each release also
 carries `SHA256SUMS`, so a download can be checked with `sha256sum -c SHA256SUMS`.
 
-The Zed extension downloads this automatically — if you use Zed, install the extension and skip this
-section entirely.
+The Zed extension and the IntelliJ template both fetch the binary themselves — if you use either, set
+that up (see [Editor setup](#editor-setup)) and skip this section entirely.
 
 With a Rust toolchain, `cargo install --git https://github.com/ashenwolf/hexaly-lsp` also works, and
 is the right choice if you intend to change the server. Note that it installs to `~/.cargo/bin`,
@@ -184,6 +184,63 @@ not appear in Cursor's extension search. Download the `.vsix` from the marketpla
 
 This server exists for editors that cannot run that extension — Zed, Neovim, Helix, Emacs — because
 neither a TextMate grammar nor a VS Code extension host is available to them.
+
+### IntelliJ IDEA and other JetBrains IDEs
+
+Two routes. Both need no plugin written for this server.
+
+#### LSP4IJ (works on any edition, and is shareable)
+
+[LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij) consumes any language server through a
+settings dialog, with no plugin to write. Install it from the Marketplace.
+
+**The short way — import the template in this repository.** It carries the command, the file mappings,
+and an installer that downloads the right binary for the machine from GitHub releases, so a colleague
+needs neither Rust nor a manual download:
+
+1. Clone this repository, or copy [`editors/intellij/hexaly-lsp/`](editors/intellij/hexaly-lsp)
+2. **Settings → Languages & Frameworks → Language Servers**, click **+**
+3. In the **Template** combo-box choose **Import from custom template…** and select that directory
+4. **OK**, then open a `.hxm` file
+
+On first start the installer places the binary in `~/.lsp4ij/lsp/hexaly-lsp`. An existing `hexaly-lsp`
+on your `$PATH` is found by the check step and used instead, so a build you are working on wins.
+**Reinstall** picks up a newer release. The template's own README is behind the dialog's help icon.
+
+**By hand**, if you would rather not import anything: set the **Server** tab command to
+`sh -c "hexaly-lsp"` (`cmd /c hexaly-lsp` on Windows) and add `*.hxm` and `*.lsp` under **Mappings →
+File name patterns**. Two details worth knowing:
+
+- Wrapping in `sh -c` / `cmd /c` is what makes the process inherit your `$PATH`. Without it a
+  GUI-launched IDE may not find a binary that works in a terminal — `~/.cargo/bin` in particular is
+  added by a shell profile and is invisible to an IDE started from Dock or a desktop entry. Use an
+  absolute path if in doubt.
+- Leave **Language ID** empty or set it to `hexaly`. This server identifies files by URI and ignores
+  the language ID, so any value works.
+
+Prefer a **file name pattern** over registering a custom file type. A custom file type claiming `*.hxm`
+conflicts with TextMate colouring, so you would lose highlighting to gain nothing.
+
+#### Native LSP client (2023.2+, commercial IDEs)
+
+JetBrains' own LSP client needs a small plugin (Kotlin, `LspIntegrationProvider`) rather than a
+settings entry, so it is only worth it if you want a one-click install for a team. It supports
+diagnostics, completion, hover, definition, formatting and range formatting, signature help, document
+and workspace symbols, find-usages, rename, folding and inlay hints — nearly everything this server
+serves.
+
+One caveat worth knowing before choosing this route: **Community Edition does not include LSP
+support**, and neither does Android Studio. The client API was open-sourced in 2026.2, but it remains
+an extension to the commercial IDEs. LSP4IJ has no such restriction, which is the main reason to start
+there.
+
+#### Highlighting
+
+Neither route gives you the tree-sitter highlighting the Zed extension has — IntelliJ cannot load a
+tree-sitter grammar from a plugin, and LSP itself provides no classic syntax highlighting. JetBrains
+IDEs colour LSP files from `textDocument/semanticTokens`, which **this server does not implement yet**,
+so expect working intelligence on uncoloured text. A TextMate bundle registered under
+**Settings → Editor → TextMate Bundles** is the interim answer.
 
 ### Emacs
 
