@@ -19,10 +19,12 @@ fn fixture(name: &str) -> PathBuf {
     std::fs::create_dir_all(root.join("inputs")).expect("temp dir");
 
     // `use` must precede every declaration in HXM - a misplaced one is a syntax error that breaks
-    // the parse of everything after it - so the fixture is ordered as real code has to be.
+    // the parse of everything after it - so the fixture is ordered as real code has to be. It
+    // imports both ways, since neither may be re-exported.
     std::fs::write(
         root.join("utils/functionalUtils.hxm"),
         "use io;\n\
+         use Imported from inputs.specialLocations;\n\
          local moduleWide = 7;\n\
          function listContains(list, item) {\n    local counter = 0;\n    return false;\n}\n\
          function listMap(list, f) { return list; }\n\
@@ -159,11 +161,16 @@ fn completion_after_a_module_alias_lists_that_modules_functions() {
         "a variable inside a function body leaked into the module surface: {labels:?}"
     );
 
-    // The imported module's own `use io;` is not re-exported: importing a module does not make its
-    // imports reachable through it.
+    // Neither `use` form is re-exported. A module it imports (`use io;`) and a member it imports
+    // (`use SpecialLocations from ...;`) are both unreachable through the importing alias, and the
+    // second was found leaking on the real model once the import form started resolving.
     assert!(
         !labels.contains(&"io"),
         "a module's imports must not be re-exported: {labels:?}"
+    );
+    assert!(
+        !labels.contains(&"Imported"),
+        "an imported member must not be re-exported: {labels:?}"
     );
 
     let _ = std::fs::remove_dir_all(&root);

@@ -127,11 +127,12 @@ impl Workspace {
 /// wrong across a module boundary: a loop counter inside one of `fn`'s functions is not reachable as
 /// `fn.i`, and offering it is a suggestion that cannot compile.
 ///
-/// Its own `use` statements are excluded for the same reason: importing a module does not re-export
-/// what it imports, so `fn.io` would suggest a path that does not exist.
+/// Neither `use` form is re-exported. Importing a module does not make its imports reachable through
+/// it, so neither `fn.io` (a module it imports) nor `fn.SpecialLocations` (a member it imports) is a
+/// path that exists.
 fn exported(document: &Document) -> Vec<Local> {
     symbols::top_level(document)
         .into_iter()
-        .filter(|local| local.kind != LocalKind::Module)
+        .filter(|local| !matches!(local.kind, LocalKind::Module | LocalKind::Import))
         .collect()
 }
