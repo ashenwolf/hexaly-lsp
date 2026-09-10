@@ -104,7 +104,11 @@ fn string_contents_are_untouched() {
     // The most important negative: a string is copied verbatim, so nothing inside it is respaced.
     let source = "function model() {\n    io.println(\"a,b   c<=d\");\n}\n";
 
-    assert_eq!(format(source), None, "a formatted line containing a string must not change");
+    assert_eq!(
+        format(source),
+        None,
+        "a formatted line containing a string must not change"
+    );
 }
 
 #[test]

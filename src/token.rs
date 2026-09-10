@@ -117,8 +117,8 @@ impl Nesting {
             }
         }
 
-        nesting.continues_a_statement = last_code_token
-            .is_some_and(|token| !matches!(token.text, ";" | "{" | "}" | ":"));
+        nesting.continues_a_statement =
+            last_code_token.is_some_and(|token| !matches!(token.text, ";" | "{" | "}" | ":"));
 
         nesting
     }
@@ -381,5 +381,8 @@ fn operator_length(text: &str) -> usize {
     OPERATORS
         .iter()
         .find(|operator| text.starts_with(*operator))
-        .map_or_else(|| text.chars().next().map_or(0, char::len_utf8), |operator| operator.len())
+        .map_or_else(
+            || text.chars().next().map_or(0, char::len_utf8),
+            |operator| operator.len(),
+        )
 }

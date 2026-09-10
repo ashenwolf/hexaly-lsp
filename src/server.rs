@@ -18,8 +18,8 @@ use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 use crate::diagnostics::{hexaly, syntax};
 use crate::discovery::{self, Discovery};
 use crate::document::Document;
-use crate::{format, language};
 use crate::workspace::Workspace;
+use crate::{format, language};
 
 /// The parser and the document map live under one lock, taken for the whole of each handler.
 ///
