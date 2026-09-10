@@ -155,27 +155,25 @@ impl Document {
         node.utf8_text(self.text.as_bytes()).ok()
     }
 
-    /// The smallest named node at an LSP position, and the identifier-ish word around it.
+    /// The identifier at an LSP position, if the cursor is on one.
     ///
-    /// Used by hover and completion, which both need to know what the cursor is on. Returns `None`
-    /// outside the document rather than clamping, since a request for a position we do not have is
-    /// better answered with nothing than with the wrong symbol.
+    /// Used by hover and signature help, which both need to know what the cursor is on. A position
+    /// outside the document yields `None` rather than being clamped: a request for a position we do
+    /// not have is better answered with nothing than with the wrong symbol.
     pub fn word_at(&self, position: Position) -> Option<&str> {
         let offset = self.byte_offset(position)?;
 
-        // A cursor sitting just after a word should still resolve it, which is the common case when
-        // hovering the end of an identifier.
-        let node = self
-            .tree
-            .root_node()
-            .named_descendant_for_byte_range(offset, offset)
-            .or_else(|| {
-                offset
-                    .checked_sub(1)
-                    .and_then(|before| self.tree.root_node().named_descendant_for_byte_range(before, before))
-            })?;
-
-        (node.kind() == "identifier").then(|| self.node_text(node))?
+        // Both the position itself and the byte before it are tried, because a cursor resting just
+        // after a word should still resolve it - hovering the end of an identifier is as common as
+        // hovering its middle. The candidates are tried in turn rather than by falling back only on
+        // a failed lookup: at the end of `bool(`, the lookup at the cursor *succeeds* and returns
+        // the paren, so a fallback guarded on `None` would never run.
+        [Some(offset), offset.checked_sub(1)]
+            .into_iter()
+            .flatten()
+            .filter_map(|byte| self.tree.root_node().named_descendant_for_byte_range(byte, byte))
+            .find(|node| node.kind() == "identifier")
+            .and_then(|node| self.node_text(node))
     }
 
     /// The container of a qualified reference at `position`, if the cursor is inside one.

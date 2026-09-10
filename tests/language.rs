@@ -194,6 +194,49 @@ fn hover_falls_back_to_the_documents_own_declaration() {
 }
 
 #[test]
+fn completion_offers_the_modelling_keywords() {
+    // `constraint`, `minimize` and `maximize` are grammar, not library functions, so they are
+    // correctly absent from the scraped artifact - and they are also what a modeller types most.
+    // Completion without them would feel broken however good the library coverage was.
+    let document = open("function model() {\n    \n}\n");
+    let items = language::completions(&document, at(1, 4));
+
+    let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
+    for keyword in ["constraint", "minimize", "maximize", "function", "local"] {
+        assert!(labels.contains(&keyword), "{keyword} missing from completion");
+    }
+
+    let keyword = items.iter().find(|item| item.label == "constraint").unwrap();
+    assert_eq!(keyword.kind, Some(CompletionItemKind::KEYWORD));
+
+    // Ranked between the document's own names and the library.
+    let own = items.iter().find(|item| item.label == "model").unwrap();
+    let library = items.iter().find(|item| item.label == "println").unwrap();
+    assert!(own.sort_text < keyword.sort_text, "a local should outrank a keyword");
+    assert!(
+        keyword.sort_text < library.sort_text.clone().or(Some(library.label.clone())),
+        "a keyword should outrank a library symbol"
+    );
+}
+
+#[test]
+fn hover_works_at_the_end_of_a_word() {
+    // Hovering the last character of an identifier is as common as hovering its middle, and at the
+    // end of `bool(` the lookup at the cursor succeeds on the paren - so a fallback guarded on a
+    // failed lookup would never fire. This caught exactly that.
+    let document = open("function model() {\n    x <- bool();\n}\n");
+
+    let inside = language::hover(&document, at(1, 10));
+    let after = language::hover(&document, at(1, 13));
+
+    assert!(inside.is_some(), "hover inside `bool`");
+    assert!(
+        after.is_some(),
+        "hover just after `bool` - cursor at the end of the word"
+    );
+}
+
+#[test]
 fn hover_on_nothing_is_none() {
     let document = open("function model() {\n    x <- bool();\n}\n");
     assert!(language::hover(&document, at(0, 0)).is_none());

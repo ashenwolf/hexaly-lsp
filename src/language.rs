@@ -18,12 +18,63 @@ use crate::symbols::{self, LocalKind};
 /// After a dot the list is the members of that container and nothing else \u2014 offering globals there
 /// would bury the handful of relevant names. Otherwise it is the document's own declarations first,
 /// then the library's globals and the container names that can start a qualified call.
+/// The language's own keywords, from the reference's keyword list.
+///
+/// Not in the standard-library artifact, and correctly so: `constraint` and `minimize` are grammar,
+/// not functions. But they are what a modeller types most, so completion that omitted them would
+/// feel broken in a way no amount of library coverage compensates for.
+///
+/// `pragma` and the reserved-for-future-use words are deliberately absent: suggesting a word that
+/// does nothing yet is worse than not suggesting it.
+const KEYWORDS: &[&str] = &[
+    "break",
+    "catch",
+    "class",
+    "constraint",
+    "constructor",
+    "continue",
+    "do",
+    "else",
+    "false",
+    "final",
+    "for",
+    "function",
+    "if",
+    "in",
+    "inf",
+    "is",
+    "local",
+    "maximize",
+    "minimize",
+    "nan",
+    "new",
+    "nil",
+    "override",
+    "return",
+    "static",
+    "super",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typeof",
+    "use",
+    "while",
+    "with",
+];
+
+/// Candidates at `position`.
+///
+/// After a dot the list is the members of that container and nothing else, since offering globals
+/// there would bury the handful of relevant names. Otherwise it is the document's own declarations
+/// first, then keywords, the library's globals, and the containers that can start a qualified call.
 pub fn completions(document: &Document, position: Position) -> Vec<CompletionItem> {
     if let Some(qualifier) = document.qualifier_at(position) {
         return stdlib::members(qualifier).map(stdlib_item).collect();
     }
 
     let locals = symbols::locals(document).into_iter().map(local_item);
+    let keywords = KEYWORDS.iter().map(|keyword| keyword_item(keyword));
     let globals = stdlib::globals().map(stdlib_item);
 
     // Containers are not symbols in the artifact, so they are synthesised: `io` has to be
@@ -34,7 +85,7 @@ pub fn completions(document: &Document, position: Position) -> Vec<CompletionIte
         .map(container_item)
         .collect::<Vec<_>>();
 
-    locals.chain(globals).chain(containers).collect()
+    locals.chain(keywords).chain(globals).chain(containers).collect()
 }
 
 /// Documentation for the symbol under the cursor.
@@ -173,6 +224,17 @@ fn container_item(container: &str) -> CompletionItem {
     CompletionItem {
         label: container.to_string(),
         kind: Some(CompletionItemKind::MODULE),
+        ..CompletionItem::default()
+    }
+}
+
+fn keyword_item(keyword: &str) -> CompletionItem {
+    CompletionItem {
+        label: keyword.to_string(),
+        kind: Some(CompletionItemKind::KEYWORD),
+        // Between the document's own names and the library: a keyword is likelier than any given
+        // stdlib symbol, but less likely than something the user just declared.
+        sort_text: Some(format!("1{keyword}")),
         ..CompletionItem::default()
     }
 }
