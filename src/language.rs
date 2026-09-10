@@ -193,19 +193,114 @@ fn hover_local(document: &Document, word: &str) -> Option<Hover> {
     })
 }
 
-/// Signature help for a call at `position`.
+/// Signature help for the call being typed at `position`.
 ///
-/// Each documented overload becomes one `SignatureInformation`. The active parameter is not
-/// computed: doing it properly means counting commas at the right nesting depth inside a call whose
-/// argument list may not parse yet, and a confidently wrong highlight is worse than none.
-pub fn signature_help(document: &Document, position: Position) -> Option<SignatureHelp> {
-    let word = document.word_at(position)?;
+/// Covers the project's own functions as well as the library's. That is not a nicety: in the model
+/// this targets, a call to `defineCapacity(modelInputs, modelConfig, throughput, ...)` is where the
+/// parameter list is actually hard to remember, and no amount of standard-library coverage helps
+/// with it. Own functions and imported ones both come from the tree, so they need no documentation
+/// to exist.
+///
+/// The active parameter IS reported, unlike in the first version of this. It comes from counting
+/// commas at depth zero while scanning back to the unbalanced paren, which is exactly the
+/// bookkeeping that made it look expensive - it turned out to be the same scan that finds the call.
+pub fn signature_help(
+    document: &Document,
+    position: Position,
+    path: Option<&Path>,
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+) -> Option<SignatureHelp> {
+    let (name, name_start, argument) = document.call_at(position)?;
 
-    let symbol = match document.qualifier_at(position) {
-        Some(qualifier) => stdlib::members(qualifier).find(|symbol| symbol.name == word),
-        None => stdlib::named(word).next(),
-    }?;
+    // The qualifier comes from the text before the call's own name, not from the cursor: inside
+    // `fn.listContains(|` the character before the cursor is the paren, so asking about the cursor
+    // position finds no dot and would miss every qualified call.
+    let qualified = document
+        .qualifier_before(name_start)
+        .and_then(|qualifier| qualified_signature(document, qualifier, name, argument, path, workspace, parser));
 
+    if let Some(help) = qualified {
+        return Some(help);
+    }
+
+    // The document's own declaration wins over a library symbol of the same name: it is the one that
+    // would actually be called.
+    if let Some(help) = local_signature(&symbols::locals(document), name, argument) {
+        return Some(help);
+    }
+
+    let symbol = stdlib::named(name).next()?;
+    Some(stdlib_signature(symbol, argument))
+}
+
+fn qualified_signature(
+    document: &Document,
+    qualifier: &str,
+    name: &str,
+    argument: u32,
+    path: Option<&Path>,
+    workspace: &mut Workspace,
+    parser: &mut tree_sitter::Parser,
+) -> Option<SignatureHelp> {
+    if let Some(symbol) = stdlib::members(qualifier).find(|symbol| symbol.name == name) {
+        return Some(stdlib_signature(symbol, argument));
+    }
+
+    let path = path?;
+    let binding = symbols::locals(document)
+        .into_iter()
+        .find(|local| matches!(local.kind, LocalKind::Module | LocalKind::Import) && local.name == qualifier)?;
+
+    let module_path = binding.module_path.as_deref()?;
+    let members = match binding.kind {
+        LocalKind::Import => workspace.imported_members(parser, path, module_path, qualifier)?,
+        _ => workspace.exports(parser, path, module_path)?.to_vec(),
+    };
+
+    local_signature(&members, name, argument)
+}
+
+/// A signature built from a declaration in the source, whose `detail` is the declaration's first
+/// line - `function listContains(array, item)`.
+fn local_signature(candidates: &[symbols::Local], name: &str, argument: u32) -> Option<SignatureHelp> {
+    let local = candidates
+        .iter()
+        .find(|candidate| candidate.name == name && candidate.kind == LocalKind::Function)?;
+
+    // The parameter names are parsed back out of the rendered declaration. They are not stored
+    // separately because this is the only consumer, and the declaration line is what a reader
+    // recognises anyway.
+    let parameters: Vec<ParameterInformation> = local
+        .detail
+        .split_once('(')
+        .and_then(|(_, tail)| tail.rsplit_once(')'))
+        .map(|(inside, _)| inside)
+        .filter(|inside| !inside.trim().is_empty())
+        .map(|inside| {
+            inside
+                .split(',')
+                .map(|parameter| ParameterInformation {
+                    label: ParameterLabel::Simple(parameter.trim().to_string()),
+                    documentation: None,
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Some(SignatureHelp {
+        signatures: vec![SignatureInformation {
+            label: local.detail.clone(),
+            documentation: None,
+            parameters: Some(parameters),
+            active_parameter: Some(argument),
+        }],
+        active_signature: Some(0),
+        active_parameter: Some(argument),
+    })
+}
+
+fn stdlib_signature(symbol: &Symbol, argument: u32) -> SignatureHelp {
     let signatures = symbol
         .signatures
         .iter()
@@ -232,15 +327,23 @@ pub fn signature_help(document: &Document, position: Position) -> Option<Signatu
                     })
                     .collect(),
             ),
-            active_parameter: None,
+            active_parameter: Some(argument),
         })
         .collect();
 
-    Some(SignatureHelp {
+    // The overload whose arity covers the cursor's argument, so typing a second argument to
+    // `io.openRead` selects the two-parameter form rather than leaving the first highlighted.
+    let active = symbol
+        .signatures
+        .iter()
+        .position(|signature| signature.matches(',').count() as u32 >= argument)
+        .unwrap_or(0);
+
+    SignatureHelp {
         signatures,
-        active_signature: Some(0),
-        active_parameter: None,
-    })
+        active_signature: Some(active as u32),
+        active_parameter: Some(argument),
+    }
 }
 
 /// Where a name is defined.

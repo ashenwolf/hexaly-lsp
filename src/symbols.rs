@@ -403,17 +403,27 @@ fn members(document: &Document, body: tree_sitter::Node<'_>) -> Vec<Local> {
         .collect()
 }
 
-/// The declaration's first line, trimmed. Enough to tell `x <- bool()` from `x <- float(0, 1)`
-/// without pulling a whole function body into a completion list.
+/// The declaration's first line, trimmed to its signature.
+///
+/// A single-line function carries its whole body on that line, and a signature-help popup showing
+/// `function f(a) { return a; }` buries the parameter list it exists to show. Everything from the
+/// opening brace is dropped, which for a declaration is always the body.
 fn summarise(document: &Document, node: tree_sitter::Node<'_>) -> String {
-    document
+    let first = document
         .node_text(node)
         .unwrap_or_default()
         .lines()
         .next()
         .unwrap_or_default()
+        .trim();
+
+    // Split on the brace rather than trimming it, so a one-line body goes too. A declaration cannot
+    // contain a brace before its body, so this cannot cut a signature short.
+    first
+        .split_once('{')
+        .map_or(first, |(signature, _)| signature)
         .trim()
-        .trim_end_matches('{')
+        .trim_end_matches(';')
         .trim()
         .to_string()
 }

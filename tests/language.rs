@@ -13,6 +13,13 @@ fn open(text: &str) -> Document {
     Document::open(&mut parser, text.to_string(), 1)
 }
 
+/// Signature help for a single-file case, with no workspace to resolve imports against.
+fn help(document: &Document, position: Position) -> Option<tower_lsp_server::ls_types::SignatureHelp> {
+    let mut parser = hexaly_lsp::parser();
+    let mut workspace = hexaly_lsp::workspace::Workspace::default();
+    language::signature_help(document, position, None, &mut workspace, &mut parser)
+}
+
 /// Completion for a single-file case. These tests predate cross-file resolution and none of them
 /// import anything, so there is no path to resolve against and an empty workspace is correct.
 fn complete(document: &Document, position: Position) -> Vec<tower_lsp_server::ls_types::CompletionItem> {
@@ -252,9 +259,16 @@ fn hover_on_nothing_is_none() {
 
 #[test]
 fn signature_help_lists_every_overload() {
-    let document = open("function main() {\n    reader = io.openRead(\n}\n");
+    let source = "function main() {\n    reader = io.openRead(\n}\n";
+    let document = open(source);
 
-    let help = language::signature_help(&document, at(1, 17)).expect("signature help for openRead");
+    // The cursor must be INSIDE the parens, which is where an editor asks from. Derived rather than
+    // counted, and note this is a behaviour change: the old tree-based version answered from anywhere
+    // on the name, which is not when signature help is wanted.
+    let line = source.lines().nth(1).unwrap();
+    let inside = line.find('(').unwrap() as u32 + 1;
+
+    let help = help(&document, at(1, inside)).expect("signature help for openRead");
 
     assert_eq!(help.signatures.len(), 2, "both overloads expected");
     assert!(help.signatures[0].label.contains("openRead"));
@@ -266,9 +280,10 @@ fn signature_help_lists_every_overload() {
         Some(Documentation::MarkupContent(_))
     ));
 
-    // Deliberately absent: computing it means counting commas at the right nesting depth in a call
-    // that may not parse, and a confidently wrong highlight is worse than none.
-    assert!(help.active_parameter.is_none());
+    // Now reported, unlike in the first version of this: the comma count comes free from the same
+    // backward scan that finds the call, so the bookkeeping that made it look expensive was already
+    // being done.
+    assert_eq!(help.active_parameter, Some(0), "cursor is in the first argument");
 }
 
 #[test]

@@ -176,6 +176,90 @@ impl Document {
             .and_then(|node| self.node_text(node))
     }
 
+    /// The function being called at `position`: its name, where that name starts, and which argument
+    /// the cursor sits in.
+    ///
+    /// Read from the text rather than the tree, for the same reason `qualifier_at` is: the case that
+    /// matters most does not parse. A freshly typed `computeCost(` has no `call_expression` node at
+    /// all - the bare `(` is an `ERROR` - and signature help is only useful while the call is still
+    /// incomplete.
+    ///
+    /// Scanning backwards, it tracks nesting so an inner call wins over an outer one
+    /// (`outer(inner(|` reports `inner`), and skips string literals so a bracket or comma inside one
+    /// cannot be mistaken for structure.
+    pub fn call_at(&self, position: Position) -> Option<(&str, usize, u32)> {
+        let offset = self.byte_offset(position)?;
+        let before = self.text.get(..offset)?;
+
+        let mut depth = 0usize;
+        let mut commas = 0u32;
+        let mut in_string = false;
+        let bytes = before.as_bytes();
+        let mut index = before.len();
+
+        while index > 0 {
+            index -= 1;
+            let byte = bytes[index];
+
+            // Quote handling is deliberately crude: scanning backwards cannot tell an opening quote
+            // from a closing one, so this toggles. Good enough to stop a comma inside a string from
+            // being counted, which is the only failure that matters here.
+            if byte == b'"' && (index == 0 || bytes[index - 1] != b'\\') {
+                in_string = !in_string;
+                continue;
+            }
+            if in_string {
+                continue;
+            }
+
+            match byte {
+                b')' | b']' => depth += 1,
+                b'[' if depth == 0 => {
+                    // An unbalanced bracket is a subscript or an index space, not a call, and there
+                    // is no signature to describe for one.
+                    return None;
+                }
+                b'(' if depth == 0 => {
+                    // An unbalanced `(` to the left: the call being typed. The name is whatever
+                    // identifier precedes it.
+                    let head = before.get(..index)?.trim_end();
+                    let start = head
+                        .rfind(|character: char| !is_identifier_character(character))
+                        .map_or(0, |boundary| boundary + 1);
+
+                    let name = head.get(start..)?;
+                    return (!name.is_empty()).then_some((name, start, commas));
+                }
+                b'(' | b'[' => depth -= 1,
+                b',' if depth == 0 => commas += 1,
+                // A statement or block boundary means there is no call being typed, so the scan stops
+                // rather than running to the top of the file. A newline is NOT a boundary: real
+                // Hexaly calls span lines, and an argument list broken across three of them is
+                // exactly when signature help earns its keep.
+                b';' | b'{' | b'}' if depth == 0 => return None,
+                _ => {}
+            }
+        }
+
+        None
+    }
+
+    /// The container qualifying a call whose name ends at `name_end`.
+    ///
+    /// Distinct from `qualifier_at`, which asks about a cursor. Inside `fn.listContains(|` the
+    /// character before the cursor is a paren, so a cursor-based question finds no dot and misses
+    /// every qualified call; the dot to look behind is the one before the callee's name.
+    pub fn qualifier_before(&self, name_start: usize) -> Option<&str> {
+        let before = self.text.get(..name_start)?.strip_suffix('.')?;
+
+        let qualifier_start = before
+            .rfind(|character: char| !is_identifier_character(character))
+            .map_or(0, |boundary| boundary + 1);
+
+        let qualifier = before.get(qualifier_start..)?;
+        (!qualifier.is_empty()).then_some(qualifier)
+    }
+
     /// The container of a qualified reference at `position`, if the cursor is inside one.
     ///
     /// `io.openR|ead` yields `io`, which is what turns a flat completion list into the members of the

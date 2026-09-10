@@ -259,13 +259,26 @@ impl LanguageServer for Backend {
 
     async fn signature_help(&self, params: SignatureHelpParams) -> jsonrpc::Result<Option<SignatureHelp>> {
         let position = params.text_document_position_params;
-        let state = self.state.lock().await;
+        let uri = position.text_document.uri;
+        let mut state = self.state.lock().await;
+        let State {
+            parser,
+            documents,
+            workspace,
+        } = &mut *state;
 
-        let Some(document) = state.documents.get(&position.text_document.uri) else {
+        let Some(document) = documents.get(&uri) else {
             return Ok(None);
         };
 
-        Ok(language::signature_help(document, position.position))
+        let path = uri.to_file_path();
+        Ok(language::signature_help(
+            document,
+            position.position,
+            path.as_deref(),
+            workspace,
+            parser,
+        ))
     }
 
     async fn shutdown(&self) -> jsonrpc::Result<()> {
