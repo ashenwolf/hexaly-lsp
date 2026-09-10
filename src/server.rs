@@ -1,19 +1,22 @@
-//! LSP server: document lifecycle and diagnostic publication.
+//! LSP server: document lifecycle, diagnostics, and language features.
 
 use std::collections::HashMap;
 use std::path::PathBuf;
 
 use tokio::sync::Mutex;
 use tower_lsp_server::ls_types::{
-    Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
-    DidSaveTextDocumentParams, InitializeParams, InitializeResult, InitializedParams, MessageType,
-    PositionEncodingKind, ServerCapabilities, ServerInfo, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+    CompletionOptions, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
+    DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+    Hover, HoverParams, HoverProviderCapability, InitializeParams, InitializeResult, InitializedParams, MessageType,
+    PositionEncodingKind, ServerCapabilities, ServerInfo, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
+    TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
 };
 use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 
 use crate::diagnostics::{hexaly, syntax};
 use crate::discovery::{self, Discovery};
 use crate::document::Document;
+use crate::language;
 
 /// The parser and the document map live under one lock, taken for the whole of each handler.
 ///
@@ -135,6 +138,17 @@ impl LanguageServer for Backend {
                 // Incremental sync is what makes tree-sitter's incremental reparse reachable: a
                 // full-text sync would discard the old tree on every keystroke.
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::INCREMENTAL)),
+                completion_provider: Some(CompletionOptions {
+                    // A dot is the only character that changes what the candidates are, since it
+                    // switches the list from globals to one container's members.
+                    trigger_characters: Some(vec![".".to_string()]),
+                    ..CompletionOptions::default()
+                }),
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
+                signature_help_provider: Some(SignatureHelpOptions {
+                    trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
+                    ..SignatureHelpOptions::default()
+                }),
                 ..ServerCapabilities::default()
             },
             server_info: Some(ServerInfo {
@@ -152,6 +166,53 @@ impl LanguageServer for Backend {
         // visible answer. Absence is normal, so it is informational rather than a warning.
         let discovery = self.hexaly.lock().await.describe();
         self.client.log_message(MessageType::INFO, discovery).await;
+
+        self.client
+            .log_message(
+                MessageType::INFO,
+                format!(
+                    "{} standard-library symbols loaded (Hexaly {})",
+                    crate::stdlib::LIBRARY.symbols.len(),
+                    crate::stdlib::LIBRARY.version,
+                ),
+            )
+            .await;
+    }
+
+    async fn completion(&self, params: CompletionParams) -> jsonrpc::Result<Option<CompletionResponse>> {
+        let position = params.text_document_position;
+        let state = self.state.lock().await;
+
+        let Some(document) = state.documents.get(&position.text_document.uri) else {
+            return Ok(None);
+        };
+
+        Ok(Some(CompletionResponse::Array(language::completions(
+            document,
+            position.position,
+        ))))
+    }
+
+    async fn hover(&self, params: HoverParams) -> jsonrpc::Result<Option<Hover>> {
+        let position = params.text_document_position_params;
+        let state = self.state.lock().await;
+
+        let Some(document) = state.documents.get(&position.text_document.uri) else {
+            return Ok(None);
+        };
+
+        Ok(language::hover(document, position.position))
+    }
+
+    async fn signature_help(&self, params: SignatureHelpParams) -> jsonrpc::Result<Option<SignatureHelp>> {
+        let position = params.text_document_position_params;
+        let state = self.state.lock().await;
+
+        let Some(document) = state.documents.get(&position.text_document.uri) else {
+            return Ok(None);
+        };
+
+        Ok(language::signature_help(document, position.position))
     }
 
     async fn shutdown(&self) -> jsonrpc::Result<()> {

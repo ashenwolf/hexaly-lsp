@@ -3,14 +3,17 @@
 Language server for [Hexaly Modeler](https://www.hexaly.com) models (`.hxm`).
 
 Provides syntax diagnostics from the
-[tree-sitter-hexaly](https://github.com/ashenwolf/tree-sitter-hexaly) grammar, plus
-compiler-backed diagnostics from a local Hexaly installation when one is present.
+[tree-sitter-hexaly](https://github.com/ashenwolf/tree-sitter-hexaly) grammar, compiler-backed
+diagnostics from a local Hexaly installation when one is present, and completion, hover and
+signature help for the Hexaly standard library.
 
-**No Hexaly licence is required**, and the syntax layer needs no Hexaly installation at all.
+**No Hexaly licence is required**, and everything except compiler diagnostics works with no Hexaly
+installation at all.
 
 ## Status
 
-Two diagnostic layers, deliberately complementary rather than one falling back to the other:
+Diagnostics come from two layers, deliberately complementary rather than one falling back to the
+other:
 
 | | Syntax (tree-sitter) | Compiler (Hexaly) |
 |---|---|---|
@@ -20,7 +23,12 @@ Two diagnostic layers, deliberately complementary rather than one falling back t
 | Catches | syntax | duplicate declarations, unresolvable `use` |
 | Needs Hexaly | no | yes, but no licence |
 
-Completion, hover and navigation are planned. None is implemented yet.
+Completion, hover and signature help cover **396 standard-library symbols** — with typed
+parameters, every documented overload, and the prose from Hexaly's own reference — plus the
+declarations in the file being edited. After a dot the candidates narrow to that module or class.
+
+Go-to-definition is planned. Rename and find-references are not: they need scope analysis whose
+cost is hard to justify for this project.
 
 ### Why no licence is needed
 
@@ -53,6 +61,16 @@ not merely unimplemented.
 
 A file whose name is not a valid Hexaly identifier (`my-model.hxm`) cannot be loaded as a module,
 so it gets syntax diagnostics only.
+
+Completion after a dot needs to know the container's type. That is read from the text rather than
+the parse tree, because the case that matters most does not parse: a freshly typed `io.` is an
+error node with no member expression in it. A dot after an *expression* (`f().`) is left alone —
+resolving it needs type inference this server does not do, and guessing would be worse than
+offering the unqualified list.
+
+Signature help does not highlight the active parameter. Determining it means counting commas at the
+right nesting depth inside a call that may not parse yet, and a confidently wrong highlight is worse
+than none.
 
 ## Install
 
@@ -147,6 +165,17 @@ cargo clippy --all-targets
 
 The grammar is pinned by `rev` in `Cargo.toml`. A grammar change means landing it in
 `tree-sitter-hexaly` and bumping that revision here.
+
+The standard-library artifact (`src/stdlib/hexaly-14.json`) is generated offline and committed:
+
+```sh
+python3 tools/scrape-stdlib.py /opt/hexaly_14_0 > src/stdlib/hexaly-14.json
+```
+
+It is not scraped at runtime, for two reasons: the documentation belongs to an installation the user
+may not have, and it is Sphinx output whose structure can change between releases. Generating it
+offline means a documentation change breaks the scraper, visibly, rather than the language server.
+The artifact is version-stamped so a mismatch is at least reportable.
 
 Two areas carry most of the risk and are tested directly rather than incidentally:
 

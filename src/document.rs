@@ -150,6 +150,66 @@ impl Document {
         }
     }
 
+    /// Source text of a node.
+    pub fn node_text(&self, node: tree_sitter::Node<'_>) -> Option<&str> {
+        node.utf8_text(self.text.as_bytes()).ok()
+    }
+
+    /// The smallest named node at an LSP position, and the identifier-ish word around it.
+    ///
+    /// Used by hover and completion, which both need to know what the cursor is on. Returns `None`
+    /// outside the document rather than clamping, since a request for a position we do not have is
+    /// better answered with nothing than with the wrong symbol.
+    pub fn word_at(&self, position: Position) -> Option<&str> {
+        let offset = self.byte_offset(position)?;
+
+        // A cursor sitting just after a word should still resolve it, which is the common case when
+        // hovering the end of an identifier.
+        let node = self
+            .tree
+            .root_node()
+            .named_descendant_for_byte_range(offset, offset)
+            .or_else(|| {
+                offset
+                    .checked_sub(1)
+                    .and_then(|before| self.tree.root_node().named_descendant_for_byte_range(before, before))
+            })?;
+
+        (node.kind() == "identifier").then(|| self.node_text(node))?
+    }
+
+    /// The container of a qualified reference at `position`, if the cursor is inside one.
+    ///
+    /// `io.openR|ead` yields `io`, which is what turns a flat completion list into the members of the
+    /// right module.
+    ///
+    /// Read from the text rather than the tree, because the case that matters most does not parse: a
+    /// freshly typed `io.` with nothing after it is an `ERROR` node holding a bare identifier, with
+    /// no `member_expression` to find. Completion has to work mid-keystroke, so the tree is the
+    /// wrong source here.
+    pub fn qualifier_at(&self, position: Position) -> Option<&str> {
+        let offset = self.byte_offset(position)?;
+        let before = self.text.get(..offset)?;
+
+        // Only a dot immediately before the cursor, or one separating the partial word being typed,
+        // makes this a qualified reference.
+        let word_start = before
+            .rfind(|character: char| !is_identifier_character(character))
+            .map_or(0, |index| index + 1);
+
+        let qualifier = before.get(..word_start)?.strip_suffix('.')?;
+
+        // The qualifier is the identifier immediately before that dot. Anything else - a closing
+        // paren, a subscript - is a method call on an expression, which needs type inference this
+        // server does not do.
+        let start = qualifier
+            .rfind(|character: char| !is_identifier_character(character))
+            .map_or(0, |index| index + 1);
+
+        let name = qualifier.get(start..)?;
+        (!name.is_empty()).then_some(name)
+    }
+
     /// The whole of `line`, as a range. The fallback for a compiler diagnostic: Hexaly reports no
     /// column, and a zero-width range at column 0 renders as an invisible squiggle.
     pub fn line_range(&self, line: u32) -> Range {
@@ -193,4 +253,9 @@ fn parse(parser: &mut tree_sitter::Parser, text: &str, old: Option<&tree_sitter:
     parser
         .parse(text, old)
         .expect("the Hexaly language is set and no cancellation flag is configured")
+}
+
+/// Hexaly identifiers are a letter or underscore followed by alphanumerics or underscores.
+fn is_identifier_character(character: char) -> bool {
+    character.is_alphanumeric() || character == '_'
 }

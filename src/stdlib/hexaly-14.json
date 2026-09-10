@@ -1,0 +1,5312 @@
+{
+ "version": "14.0",
+ "symbols": [
+  {
+   "name": "abs",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "abs(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the absolute value of a number or creates a abs expression. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "and",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "and([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a boolean and expression with the given arguments. Each argument can be a solver expression or a boolean. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns the integer 1."
+  },
+  {
+   "name": "array",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "array([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an array made of the given elements (possibly arrays). Indexes begin at 0. An array doesn’t have a value by itself, but can contain operands of type boolean, integer, double, array (for multi-dimensional arrays) or collections (lists or sets). In the latter case, the collections must share the same domain and same type (either list or set). All the elements of an array must be of the same type.\n\nWhen defining a variadic array (with a range or a list as the first operand and a lambda function as the second operand), we allow a recursive definition of the elements in this array by using a second argument in the function, containing the evaluation of the function on the previous element of the range. In this case, a third operand can be added, representing the value of the element before the first element in the array."
+  },
+  {
+   "name": "at",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "at(arr, index0[, index1[, index2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "If arr is an array:\n\nReturns the given indexed element of array arr.\n\nThe model will be considered as infeasible while no such element exists.\n\nIf arr is a list:\n\nOnly one index can be given.\n\nReturns the given indexed element of list arr.\n\nThe model will be considered as infeasible if the index is negative or greater or equal to count()."
+  },
+  {
+   "name": "bool",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "bool()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a new boolean decision and adds it to the Hexaly Optimizer model. This function always returns a solver expression."
+  },
+  {
+   "name": "call",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "call(func[, arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Calls a function. It can be used to implement your own operator. See external functions for details."
+  },
+  {
+   "name": "ceil",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "ceil(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the ceiling of the argument or creates a ceil expression. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "constArray",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "constArray(values)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a constant array expression containing the given values. Note that the constant array created does not have operands."
+  },
+  {
+   "name": "contains",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "contains(expr1, expr2)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the first operand contains the second one, false otherwise. This operator takes exactly two arguments: the first one is an interval, a collection (list() or set()), an array() of collections or a constant array, the second one either an integer expression or an interval to search for. If expr1 is an array, all its collections must be of the same type and on the same range. If expr2 is an interval, expr1 must also be an interval. In this case contains(expr1, expr2) is true if and only if the interval expr2 is fully contained in the first interval expr1. An interval I2 is considered fully contained in I1 if it starts at or after I1’s start and ends at or before I1’s end. It will then return False if the interval expr1 is void. If the interval expr2 is void this operator will return undefined."
+  },
+  {
+   "name": "cos",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "cos(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a cosine expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "count",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "count(expression)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the number of elements in an array, interval, list() or set()."
+  },
+  {
+   "name": "cover",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "cover(coll0[, coll1[, coll2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an expression equal to true when all the operands form a cover of their common domain. All the operands must be collections of the same type (either list() or set()) and on the same range. These collections can be stored in a LSArray that will be passed as argument of the cover: COVER(array(c1, c2, ..., cN))."
+  },
+  {
+   "name": "disjoint",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "disjoint(coll0[, coll1[, coll2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an expression equal to true when all the operands are pairwise disjoint. All the operands must be collections of the same type (either list() or set()) and on the same range. These collections can be stored in a LSArray that will be passed as argument of the disjoint: DISJOINT(array(c1, c2, ..., cN))."
+  },
+  {
+   "name": "dist",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "dist(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the distance between two numbers or creates a distance expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "distinct",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "distinct(op1[, op2])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the unordered set of distinct values of the given array, or among all the values returned by the function called on each element of the given collection (list() or set()), interval() or range()."
+  },
+  {
+   "name": "div",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "div(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the division between two numbers or creates a div expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "doubleArrayExternalFunction",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "doubleArrayExternalFunction(func)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds a custom function to the model. This funciton must return a double array. See external functions for details."
+  },
+  {
+   "name": "doubleExternalFunction",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "doubleExternalFunction(func)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds a custom function to the model. This function must return a double value. See external functions for details."
+  },
+  {
+   "name": "end",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "end(expression)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the end of a non-void interval."
+  },
+  {
+   "name": "eq",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "eq(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates an equality solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "exp",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "exp(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates an exponential expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "find",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "find(array, elem)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the position of the first collection containing the given element in the array. If the element is not in any collections of the array, it returns -1. If the element belongs to several collections, it returns the smallest position among the collections containing the element. This operator takes exactly two arguments: the first one is an array() of collections, the second one is the element searched. All the collections of the array must be of same type and on the same range."
+  },
+  {
+   "name": "findHeader",
+   "container": "",
+   "kind": "method",
+   "signatures": [
+    "findHeader(headerName)"
+   ],
+   "parameters": [],
+   "returns": "map (cookie) or nil",
+   "documentation": "Returns the cookie with the given name or nil if no cookie with such name exists. The name is case-sensitive. Foo or foo are considered as two different cookies."
+  },
+  {
+   "name": "float",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "float(lb, ub)"
+   ],
+   "parameters": [
+    {
+     "name": "lb",
+     "type": "",
+     "doc": "Lower bound."
+    },
+    {
+     "name": "ub",
+     "type": "",
+     "doc": "Upper bound (included)."
+    }
+   ],
+   "returns": "",
+   "documentation": "Creates a new float decision with the given bounds [lb, ub] and adds it to the Hexaly Optimizer model. This function always returns a solver expression. Bounds must be numbers (integers or doubles)."
+  },
+  {
+   "name": "floor",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "floor(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the floor of the argument or creates a floor expression. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "geq",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "geq(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates an inequality ‘greater than or equal to’. solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "gt",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "gt(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates an inequality ‘greater than’ solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "hull",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "hull(op0[, op1[, op2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Operands must be interval. Intervals can be stored in a LSArray that will be passed as argument of the hull: HULL(array(i1, i2, ..., iN)) Returns the smallest interval included in all the intervals given as arguments: its start is equal to the smallest start of its arguments, and its end is equal to the largest end of its arguments. Void intervals are ignored."
+  },
+  {
+   "name": "hxIterationBetweenTicks",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxIterationBetweenTicks",
+    "lsIterationBetweenTicks"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Interval in iterations between two iteration ticks during the search. This number must be strictly positive. Default value is 10,000."
+  },
+  {
+   "name": "hxIterationLimit",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxIterationLimit",
+    "lsIterationLimit"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "The number(s) of iterations of Hexaly Optimizer algorithms allowed in the search. It can be an integer or a collection of integers (always non-negative). The default number of iterations is set to the largest positive integer, that is 2^63-1 = 9,223,372,036,854,775,807 > 10^18. If hxIterationLimit is set to an integer value, the search will stop after this granted amount of iterations (or earlier if an optimal solution is found). If hxIterationLimit is set to a collection of integers, then the search will proceed by phases:\n\nthe first number will be the number of iterations allocated to the optimization of the first objective (1st phase),\n\nthe second number will be the number of iterations allocated to the second objective (2nd phase),\n\nand so on…\n\nThe number of iteration limits must be smaller or equal to the number of objectives. Note that if the optimal value of an objective is found before the end of the corresponding phase, the remaining number of iterations will be transferred to the next phase."
+  },
+  {
+   "name": "hxNbDisplayedObjectives",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxNbDisplayedObjectives"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Maximum number of objectives to display. Default value is 7."
+  },
+  {
+   "name": "hxNbDisplayedViolatedConstraints",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxNbDisplayedViolatedConstraints"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Maximum number of violated constraints to display. Default value is 6."
+  },
+  {
+   "name": "hxNbThreads",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxNbThreads",
+    "lsNbThreads"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of threads used to parallelize the search. The default value is 0, which means that the number of threads is automatically adapted to your computer and to your optimization model. When set to 0, the system will create at least 4 threads by default, as it is recommended to have at least 4 physical cores for nominal performance. This parameter is indicative, if needed Hexaly Optimizer may use more threads. The actual number of threads can also vary during the search.\n\nFurthermore, if you use external functions with Hexaly Modeler, the optimizer will use only one thread to avoid concurrent accesses to your external function. Please read Performance issues for more details."
+  },
+  {
+   "name": "hxObjectiveThreshold",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxObjectiveThreshold",
+    "lsObjectiveThreshold"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Sets the threshold of the objective. If hxObjectiveThreshold is set to an integer or a double (according to the objective type), the optimization is stopped as soon as the lower (minimization case) or upper (maximization case) threshold is reached.\n\nIt can also be a collection of integer or doubles for multi-objectives problems."
+  },
+  {
+   "name": "hxSeed",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxSeed",
+    "lsSeed"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "The seed of the pseudorandom number generator used by Hexaly Optimizer internally to perform its search. This number must be positive or zero. Default value is 0."
+  },
+  {
+   "name": "hxSolution",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxSolution",
+    "lsSolution"
+   ],
+   "parameters": [],
+   "returns": "HxSolution",
+   "documentation": "Gives access to the solution object of the solver. With this variable you can query the status of the solution (with hxSolution.status), the bounds and the gaps of the objectives (with hxSolution.objectiveBounds and hxSolution.objectiveGaps).\n\nFor more information on all the available fields and features of this variable, please refer to the documentation of HxSolution Class.\n\nThis variable is not available during the modeling phase. Therefore, the value of this variable during the execution of the input() and model() methods is nil."
+  },
+  {
+   "name": "hxStatistics",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxStatistics",
+    "lsStatistics"
+   ],
+   "parameters": [],
+   "returns": "HxStatistics",
+   "documentation": "Gives access to the statistics of the solver. With this variable you can query the various statistics exposed by the solver at the end of the optimization or during the optimization when the method display is periodically invoked.\n\nThe resolution time is available in hxStatistics.runningTime and the number of iterations in hxStatistics.nbIterations. For more information on all the available fields and features of this variable, please refer to the documentation of HxStatistics Class.\n\nThis variable is not available during the modeling phase. Therefore, the value of this variable during the execution of the input() and model() methods is nil."
+  },
+  {
+   "name": "hxTimeBetweenDisplays",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxTimeBetweenDisplays",
+    "hxTimeBetweenDisplays"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Interval in seconds between two displays during the search. This number must be strictly positive. Default value is 1."
+  },
+  {
+   "name": "hxTimeBetweenTicks",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxTimeBetweenTicks",
+    "lsTimeBetweenTicks"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Interval in seconds between two time ticks during the search. This number must be strictly positive. Default value is 1."
+  },
+  {
+   "name": "hxTimeLimit",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxTimeLimit",
+    "lsTimeLimit"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "The time limit(s) allocated to the search, in seconds. It can be an integer or a collection of integers (always non-negative). Note that the “real” time (that is, total time) spent to resolve the model is considered here and not only the CPU time. The default time limit is set to the largest positive integer on 32 bits, that is 2^31-1 = 2,147,483,647 > 10^9. If hxTimeLimit is set to an integer value, the search will stop after this granted amount of seconds (or earlier if an optimal solution is found). If hxTimeLimit is set to a collection of integers, then the search will proceed by phases:\n\nthe first number will be the number of seconds allocated to the optimization of the first objective (1st phase),\n\nthe second number will be the number of seconds allocated to the second objective (2nd phase),\n\nand so on…\n\nThe number of time limits must be smaller or equal to the number of objectives. Note that if the optimal value of an objective is found before the end of the corresponding phase, the remaining time will be transferred to the next phase."
+  },
+  {
+   "name": "hxVerbosity",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxVerbosity",
+    "lsVerbosity"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Verbosity level of the solver. The amount of information displayed during the search depends on this parameter. There are 3 different levels:\n\n0: All traces are disabled\n\n1: Normal verbosity. Displays only the most crucial indicators: objectives, elapsed time and number of iterations.\n\n2: Wordy level. Displays additional statistics like the number of decisions of each type."
+  },
+  {
+   "name": "hxWarningLevel",
+   "container": "",
+   "kind": "variable",
+   "signatures": [
+    "hxWarningLevel"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Controls whether warning computation is performed during preprocessing. There are 3 different levels:\n\n0: Disable warning computation.\n\n1: Automatic behavior - warning computation is enabled by default but may be automatically disabled for very large instances.\n\n2: Force warning computation on all instances, including large ones."
+  },
+  {
+   "name": "iif",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "iif(condition, trueValue, falseValue)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Performs the if or creates a ternary conditional expression. The condition can be a solver expression or a boolean. The trueValue and falseValue can be solver expressions, booleans, integers or doubles. If the condition is a boolean, trueValue or falseValue is returned accordingly without any further treatment. Otherwise a new solver expression is returned."
+  },
+  {
+   "name": "indexOf",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "indexOf(list, elem)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the position of the given element in a list(), or -1 if the element is not in the list. The returned value is an integer from -1 to count(list)-1"
+  },
+  {
+   "name": "int",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "int(lb, ub)"
+   ],
+   "parameters": [
+    {
+     "name": "lb",
+     "type": "int",
+     "doc": "Lower bound."
+    },
+    {
+     "name": "ub",
+     "type": "int",
+     "doc": "Upper bound (included)."
+    }
+   ],
+   "returns": "",
+   "documentation": "Creates a new integer decision with the given bounds [lb, ub] and adds it to the Hexaly Optimizer model. This function always returns a solver expression. Bounds must be integers."
+  },
+  {
+   "name": "intArrayExternalFunction",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "intArrayExternalFunction(func)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds a custom function to the model. This function must return a int array. See external function for details."
+  },
+  {
+   "name": "intExternalFunction",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "intExternalFunction(func)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds a custom function to the model. This function must return an integer value. See external functions for details."
+  },
+  {
+   "name": "intersection",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "intersection(op0[, op1[, op2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "With collection expressions Returns the intersection between an array/collection and an other array/collection. This operator accepts two operands. The operator takes a collection (set or list), or an array (constant or not) as its first and second operand. The operator returns the unordered set of the values present in both operands.\n\nWith intervals The number of operands is n >= 1. Return the biggest interval fully present in all operands."
+  },
+  {
+   "name": "interval",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "interval(minStart, maxEnd)"
+   ],
+   "parameters": [
+    {
+     "name": "minStart",
+     "type": "int",
+     "doc": "Min start."
+    },
+    {
+     "name": "maxEnd",
+     "type": "int",
+     "doc": "Max end."
+    }
+   ],
+   "returns": "",
+   "documentation": "Creates a new interval decision included in [minStart, maxEnd) and adds it to the Hexaly Optimizer model. Start is inclusive and end is exclusive. This function always returns a solver expression. Bounds must be integers."
+  },
+  {
+   "name": "length",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "length(expression)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the length of a non-void interval. The length of an interval is equivalent to end(interval) - start(interval). It differs from the count on void intervals since the length of a void interval is undefined whereas the count of a void interval is 0."
+  },
+  {
+   "name": "leq",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "leq(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates an inequality ‘lower than or equal to’ solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "list",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "list(n)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a new list decision that can contain integers in [0, n-1]. See lists variables for a description of list variables."
+  },
+  {
+   "name": "log",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "log(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a natural logartihm expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "lt",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "lt(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates an inequality ‘lower than’ solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "map",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "map([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a new map initialized with the given arguments. Keys will start at 0. You can use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns an empty map. ."
+  },
+  {
+   "name": "max",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "max(arg0[, arg1[, arg2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a max expression with the given arguments. Each argument can be a solver expression, a boolean, an integer or a double. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax, but note that at least one argument is required."
+  },
+  {
+   "name": "min",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "min(arg0[, arg1[, arg2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a min expression with the given arguments. Each argument can be a solver expression, a boolean, an integer or a double. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax, but note that at least one argument is required."
+  },
+  {
+   "name": "mod",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "mod(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the modulo between two integers or creates a mod expression. Each argument can be a solver expression, a boolean or an integer."
+  },
+  {
+   "name": "neq",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "neq(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Compares the arguments or creates a disequality solver expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "not",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "not(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Negates a boolean or creates a boolean not expression. The argument can be a solver expression or a boolean."
+  },
+  {
+   "name": "optionalInterval",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "optionalInterval(minStart, maxEnd)"
+   ],
+   "parameters": [
+    {
+     "name": "minStart",
+     "type": "int",
+     "doc": "Min start."
+    },
+    {
+     "name": "maxEnd",
+     "type": "int",
+     "doc": "Max end."
+    }
+   ],
+   "returns": "",
+   "documentation": "Creates a new optional interval decision, which can either be absent (void) or included in [minStart, maxEnd) and adds it to the Hexaly Optimizer model. When present, start is inclusive and end is exclusive. When absent, start and end are undefined. This function always returns a solver expression. Bounds must be integers."
+  },
+  {
+   "name": "or",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "or([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a boolean or expression with the given arguments. Each argument can be a solver expression or a boolean. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns the integer 0."
+  },
+  {
+   "name": "partition",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "partition(coll0[, coll1[, coll2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an expression equal to true when all the operands form a partition of their common domain. All the operands must be collections of the same type (either list() or set()) and on the same range. These collections can be stored in a LSArray that will be passed as argument of the partition: PARTITION(array(c1, c2, ..., cN))."
+  },
+  {
+   "name": "piecewise",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "piecewise(x, y, z)"
+   ],
+   "parameters": [
+    {
+     "name": "x",
+     "type": "",
+     "doc": "A non-decreasing array of ‘’n’’ constant numbers, with ‘’n’’ >= 2."
+    },
+    {
+     "name": "y",
+     "type": "",
+     "doc": "An array of ‘’n’’ constant numbers"
+    },
+    {
+     "name": "z",
+     "type": "",
+     "doc": "An integer or double expression."
+    }
+   ],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "pow",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "pow(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes a power b or creates a pow expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "presence",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "presence(expression)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the presence of an interval."
+  },
+  {
+   "name": "print",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "print([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Same as println() without the new line."
+  },
+  {
+   "name": "println",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "println([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Writes the arguments to the standard output followed by a new line. If an argument is not convertible to a string, an error is thrown. You can use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function simply prints a new empty line."
+  },
+  {
+   "name": "prod",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "prod([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a product expression with the given arguments. Each argument can be a solver expression, a boolean, an integer or a double. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns the integer 1."
+  },
+  {
+   "name": "round",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "round(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the closest integer to the argument or creates a round expression. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "scalar",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "scalar(arr1, arr2)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the scalar product of the two arrays (of the same length)."
+  },
+  {
+   "name": "set",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "set(n)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a new set decision that can contain integers in [0, n-1]. See sets variables for a description of set variables."
+  },
+  {
+   "name": "sin",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "sin(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a sine expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "sort",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "sort(expression[, lambda])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the input sorted in ascending order. This operator takes one argument that is either an array() or a collection (list(), set(), union(), distinct(), or intersection()). When used with a lambda as second argument, the operator will sort the input based on the values returned by the lambda. The sort operator guarantees that the order of elements having the same key is preserved, except when the object is a set. In that case, the order of elements having the same key will be determined by their ascending values."
+  },
+  {
+   "name": "sqrt",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "sqrt(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a square root expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "start",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "start(expression)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the start of a non-void interval."
+  },
+  {
+   "name": "stepArray",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "stepArray(indices, values)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns a constant array with optimized memory. Both arguments must be constant arrays of equal size. indices must contain the indices in increasing order where there are value changes in the array. values must contain the values of the array within each interval of the given indices: the values located between indices[i - 1] and indices[i] will be equal to values[i]."
+  },
+  {
+   "name": "sub",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "sub(a, b)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the difference between two numbers or creates a sub expression. Each argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "sum",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "sum([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a sum expression with the given arguments. Each argument can be a solver expression, a boolean, an integer or a double. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns the integer 0."
+  },
+  {
+   "name": "tan",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "tan(a)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a tangent expression with the given argument. The argument can be a solver expression, a boolean, an integer or a double."
+  },
+  {
+   "name": "union",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "union(op0[, op1[, op2[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Return the unordered set of the values present in at least one operand."
+  },
+  {
+   "name": "xor",
+   "container": "",
+   "kind": "function",
+   "signatures": [
+    "xor([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes or creates a boolean xor expression with the given arguments. Each argument can be a solver expression or a boolean. It is also possible to use this function with a variadic number of arguments or with the variadic call syntax. If no argument is given, this function returns the integer 0."
+  },
+  {
+   "name": "colNames",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "colNames"
+   ],
+   "parameters": [],
+   "returns": "Map (array of strings) or nil",
+   "documentation": "Returns the columns names. If no column names were found or provided, nil is returned."
+  },
+  {
+   "name": "cols",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "cols"
+   ],
+   "parameters": [],
+   "returns": "Map",
+   "documentation": "Returns all columns as a map, indexed by column number. For each column, rows are indexed by number."
+  },
+  {
+   "name": "colsByName",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "colsByName"
+   ],
+   "parameters": [],
+   "returns": "Map",
+   "documentation": "Returns all columns as a map, indexed by column name. For each column, rows are indexed by number.\n\nIf no column names were found or provided, this method will throw an error."
+  },
+  {
+   "name": "nbCols",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "nbCols"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of columns."
+  },
+  {
+   "name": "nbRows",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "nbRows"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of rows."
+  },
+  {
+   "name": "rows",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "rows"
+   ],
+   "parameters": [],
+   "returns": "Map",
+   "documentation": "Returns all rows as a map, indexed by row number. For each row, columns are indexed by column number."
+  },
+  {
+   "name": "rowsByColName",
+   "container": "CsvContent",
+   "kind": "field",
+   "signatures": [
+    "rowsByColName"
+   ],
+   "parameters": [],
+   "returns": "Map",
+   "documentation": "Returns all rows as a map, indexed by row number. For each row, columns are indexed by column name.\n\nIf no column names were found or provided, this method will throw an error."
+  },
+  {
+   "name": "colNames",
+   "container": "CsvReader",
+   "kind": "field",
+   "signatures": [
+    "colNames"
+   ],
+   "parameters": [],
+   "returns": "Map (array of strings) or nil",
+   "documentation": "Returns the columns names. If no column names were found or provided, nil is returned."
+  },
+  {
+   "name": "nextRow",
+   "container": "CsvReader",
+   "kind": "method",
+   "signatures": [
+    "nextRow()"
+   ],
+   "parameters": [],
+   "returns": "Map or nil",
+   "documentation": "Read the next line of the CSV file. It returns the read row indexed by column numbers, or nil if the end of file is reached."
+  },
+  {
+   "name": "nextRowByColName",
+   "container": "CsvReader",
+   "kind": "method",
+   "signatures": [
+    "nextRowByColName()"
+   ],
+   "parameters": [],
+   "returns": "Map or nil",
+   "documentation": "Read the next line of the CSV file. It returns the read row indexed by column names, or nil if the end of file is reached.\n\nIf no column names were found or provided, this method will throw an error."
+  },
+  {
+   "name": "rowNumber",
+   "container": "CsvReader",
+   "kind": "field",
+   "signatures": [
+    "rowNumber"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of read rows."
+  },
+  {
+   "name": "add",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "add(timespan)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addDays",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addDays(nbDays)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addHours",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addHours(nbHours)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addMilliseconds",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addMilliseconds(nbMillis)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addMinutes",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addMinutes(nbMinutes)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addMonths",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addMonths(nbMonths)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addSeconds",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addSeconds(nbSeconds)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addYears",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "addYears(nbYears)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "date",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "date"
+   ],
+   "parameters": [],
+   "returns": "DateTime",
+   "documentation": "Returns the date component of the current datetime instance. The returned object has the same date as this instance, and its time component set to midnight (00:00:00.0)."
+  },
+  {
+   "name": "day",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "day"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the day of the month represented by this datetime instance. The day of the month is expressed as an integer between 1 and 31."
+  },
+  {
+   "name": "dayOfWeek",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "dayOfWeek"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the day of the week represented by this datetime instance. The day of the week is expressed as an integer between 1 and 7 where 1 represents Monday and 7 represents Sunday (according to ISO-8601 standard)."
+  },
+  {
+   "name": "dayOfYear",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "dayOfYear"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the day of the year represented by this datetime instance. The day of the year is expressed as an integer between 1 and 366."
+  },
+  {
+   "name": "format",
+   "container": "DateTime",
+   "kind": "method",
+   "signatures": [
+    "format(fmt)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "hour",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "hour"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the hour component of the date represented by this datetime instance. The hour component is expressed as an integer between 0 and 23."
+  },
+  {
+   "name": "millisecond",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "millisecond"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the millisecond component of the date represented by this datetime instance. The millisecond component is expressed as an integer between 0 and 999."
+  },
+  {
+   "name": "minute",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "minute"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the minute component of the date represented by this datetime instance. The minute component is expressed as an integer between 0 and 59."
+  },
+  {
+   "name": "month",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "month"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the month component of the date represented by this datetime instance. The month component is expressed as an integer between 1 and 12."
+  },
+  {
+   "name": "second",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "second"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the second component of the date represented by this datetime instance. The second component is expressed as an integer between 0 and 59."
+  },
+  {
+   "name": "year",
+   "container": "DateTime",
+   "kind": "field",
+   "signatures": [
+    "year"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Gets the year component of the date represented by this datetime instance."
+  },
+  {
+   "name": "addCallback",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.addCallback(type, callback)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Add a new callback for a specific event type. The callback will be called each time the given event occurs. When a callback is called, the solver is paused. You can stop the resolution from a callback, retrieve the current solution, retrieve the statistics of the solver and, in general, call all the methods marked as “allowed in state PAUSED”.\n\nThe same callback can be used for different events.\n\nThe callback must be a function accepting 0, 1 or 2 parameters that are respectively the Hexaly Optimizer environment and the type of the event. The type of the event must be a string among:\n\nPHASE_STARTED: Event that occurs when a phase is started.\n\nPHASE_ENDED: Event that occurs when a phase ends.\n\nDISPLAY: Event that occurs regularly before, after and during the search to display useful information about the model and the resolution. The time between two such events can be tuned with the timeBetweenDisplays parameter.\n\nTIME_TICKED: Event that occurs regularly during the resolution. The time between two such events can be tuned with the timeBetweenTicks parameter.\n\nITERATION_TICKED: Event that occurs regularly during the resolution. The number of iterations between two such events can be tuned with the iterationBetweenTicks parameter."
+  },
+  {
+   "name": "computeInconsistency",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.computeInconsistency()"
+   ],
+   "parameters": [],
+   "returns": "HxInconsistency",
+   "documentation": "Compute an inconsistency core for this model. Only allowed in state STOPPED."
+  },
+  {
+   "name": "createPhase",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.createPhase()"
+   ],
+   "parameters": [],
+   "returns": "HxPhase",
+   "documentation": "Creates and adds a new phase to this Hexaly Optimizer environment. Only allowed in state STOPPED."
+  },
+  {
+   "name": "enter",
+   "container": "HexalyOptimizer",
+   "kind": "operator",
+   "signatures": [
+    "HexalyOptimizer.enter()",
+    "HexalyOptimizer.exit()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "These operators are automatically called when a solver instance is used in a with statement.\n\nenter is called at the beginning of the with statement. It sets the solver as the current solver, the one that will be used when calling the mathematical operators and the keywords minimize, maximize and constraint.\n\nexit restores the previous solver as the current solver (or none)."
+  },
+  {
+   "name": "loadEnvironment",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.loadEnvironment(filename)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "",
+     "doc": "Name of the file."
+    }
+   ],
+   "returns": "",
+   "documentation": "Import a complete environment from a file. Only allowed in state MODELING. The current model must be empty.\n\nThe only format supported is HXB.\n\nThe chosen file format is determined by the file suffix. An exception is thrown if the provided file suffix is not supported. The suffix may optionally be followed by .gz. In that case, this function uncompress the stream before reading."
+  },
+  {
+   "name": "model",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.model"
+   ],
+   "parameters": [],
+   "returns": "HxModel",
+   "documentation": "Model associated to this Hexaly Optimizer environment. Once the model is created and closed, the solver can be launched with solve()."
+  },
+  {
+   "name": "nbPhases",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.nbPhases"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of phases. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "param",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.param"
+   ],
+   "parameters": [],
+   "returns": "HxParam",
+   "documentation": "Parameters of this Hexaly Optimizer environment."
+  },
+  {
+   "name": "phases",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.phases"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxPhase.",
+   "documentation": "Phases. This field returns a readonly map-like structure containing HxPhase with the following features:\n\nA count field to get the number of phases, e.g. phases.count().\n\nAn overloaded index [] operator to get a phase, e.g. phases[0]. The index must be between 0 and phases.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the phases with a for statement."
+  },
+  {
+   "name": "removeCallback",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.removeCallback(type, callback)"
+   ],
+   "parameters": [
+    {
+     "name": "type",
+     "type": "",
+     "doc": "Type of the callback to remove. Must be a string among “PHASE_STARTED”, “PHASE_ENDED”, “DISPLAY”, “TIME_TICKED” or “ITERATION_TICKED”."
+    },
+    {
+     "name": "callback",
+     "type": "",
+     "doc": "Callback to remove. Must be exactly the same instance as the one provided for addCallback()."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Remove the callback for the given event type and previously added with addCallback()."
+  },
+  {
+   "name": "saveEnvironment",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.saveEnvironment(filename)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "",
+     "doc": "Name of the file."
+    }
+   ],
+   "returns": "",
+   "documentation": "Export a complete environment or a model to a file.\n\nCurrently, this function supports 2 file formats:\n\nHXB : with this format, the complete environment (model, parameters, solution, …) is exported. This format is useful to debug or replay a model in the same conditions. Since the produced file is binary, it offers good performance and space efficiency.\n\nHXM : with this format, only the model is exported in the Hexaly Modeling Language. This format is useful to have a quick view of the optimization model or to perform some modifications. However, the file may be heavy for big models and the exact reproductibility is not guaranteed since the parameters from one execution to another may differ.\n\nThe chosen file format is determined by the file suffix. An exception is thrown if the provided file suffix is not supported. The suffix may optionally be followed by .gz. In that case, this function produces a compressed result (using deflate algorithm)."
+  },
+  {
+   "name": "solution",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.solution"
+   ],
+   "parameters": [],
+   "returns": "HxSolution",
+   "documentation": "Best solution found by the solver. If the solver has not been started at least once, all the decision variables of the solution are set to 0, or to their closest bound if 0 is not part of their domain (such a solution may be infeasible).\n\nOnly allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "solve",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.solve()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Solves the model. This method returns only when the time limit, the iteration limit, the objective bounds are reached or when the method stop() is called. The model must be closed to launch the resolution."
+  },
+  {
+   "name": "state",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.state"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "State of this Hexaly Optimizer environment. The returned value can be one of the following strings:\n\nMODELING: Model is being built. This status is returned when the optimization model is not yet closed (or if it has been reopened).\n\nRUNNING: The solve() method has been called. This value can only appear in the modeler when the solver calls an external function.\n\nPAUSED: The solver and all its optimization algorithms are paused. This is the status of the solver when a callback is invoked.\n\nSTOPPED: State of the solver when the model is closed but not yet run or when the optimization is finished."
+  },
+  {
+   "name": "statistics",
+   "container": "HexalyOptimizer",
+   "kind": "field",
+   "signatures": [
+    "HexalyOptimizer.statistics"
+   ],
+   "parameters": [],
+   "returns": "HxStatistics",
+   "documentation": "Statistics of this Hexaly Optimizer environment. Statistics are reset to zero before each resolution. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "stop",
+   "container": "HexalyOptimizer",
+   "kind": "method",
+   "signatures": [
+    "HexalyOptimizer.stop()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Aborts the resolution previously launched using solve(). If no resolution was launched, this method does nothing. Solution and statistics remain valid. This method can be called in any state, notably in state RUNNING. Note that the effect of this method is not immediate. In particular when called within a callback, the resolution will not be stopped before the end of the callback."
+  },
+  {
+   "name": "asJson",
+   "container": "HttpResponse",
+   "kind": "method",
+   "signatures": [
+    "asJson()",
+    "asJson(options)"
+   ],
+   "parameters": [],
+   "returns": "map",
+   "documentation": "Converts the response body into JSON. Several options can be used to customize the behavior of the JSON parser. The options must be specified in a map. The supported options are detailed at the end of this page.\n\nYou can call this method regardless of the type of content returned by the server. However, the Content-type is still used to determine the encoding of the document. If no encoding is specified, utf-8 is assumed by default. Note that an error is thrown is the specified encoding is not supported. The list of supported enocdings is available in this page."
+  },
+  {
+   "name": "asText",
+   "container": "HttpResponse",
+   "kind": "method",
+   "signatures": [
+    "asText()"
+   ],
+   "parameters": [],
+   "returns": "string",
+   "documentation": "Converts the response body into text. This method will use the encoding specified by the server in the response (by reading the Content-type). If no encoding is specified, utf-8 is assumed by default.\n\nThis method can fail if the response is encoded using a non-supported charset. The list of supported encodings is available in this page."
+  },
+  {
+   "name": "cookies",
+   "container": "HttpResponse",
+   "kind": "field",
+   "signatures": [
+    "cookies"
+   ],
+   "parameters": [],
+   "returns": "map (array of cookies)",
+   "documentation": "Returns a map formatting the response cookies. Cookies are indexed from 0 to n-1. Each cookie is a map itself which follows the format detailed in a the cookies table below. The returned map is read-only."
+  },
+  {
+   "name": "findHeader",
+   "container": "HttpResponse",
+   "kind": "method",
+   "signatures": [
+    "findHeader(headerName)"
+   ],
+   "parameters": [],
+   "returns": "string or nil",
+   "documentation": "Returns the value of the first header whose name is given as an argument to this function, or nil if no header with such name exists. The name is not case-sensitive. Calling findHeader(\"Content-type) or findHeader(\"content-type\") returns the same result."
+  },
+  {
+   "name": "headers",
+   "container": "HttpResponse",
+   "kind": "field",
+   "signatures": [
+    "headers"
+   ],
+   "parameters": [],
+   "returns": "map (array of headers)",
+   "documentation": "Returns a map containing the response headers. Headers are indexed from 0 to n-1. Each header is a map itself containing two fields: name and value. You’ll find more information on header formats in the table below. The returned map is read-only."
+  },
+  {
+   "name": "statusCode",
+   "container": "HttpResponse",
+   "kind": "field",
+   "signatures": [
+    "statusCode"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the status code of the HTTP response."
+  },
+  {
+   "name": "count",
+   "container": "HxArray",
+   "kind": "method",
+   "signatures": [
+    "HxArray.count()"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of values in the array. Elements in arrays are indexed from 0 to count()-1."
+  },
+  {
+   "name": "index",
+   "container": "HxArray",
+   "kind": "operator",
+   "signatures": [
+    "HxArray.index(position)"
+   ],
+   "parameters": [
+    {
+     "name": "position",
+     "type": "int",
+     "doc": "The considered position. Must be non negative and striclty smaller than the number of values in the array."
+    }
+   ],
+   "returns": "",
+   "documentation": "Indexer. Gets the value at the given position."
+  },
+  {
+   "name": "isUndefined",
+   "container": "HxArray",
+   "kind": "method",
+   "signatures": [
+    "HxArray.isUndefined(position)"
+   ],
+   "parameters": [
+    {
+     "name": "position",
+     "type": "int",
+     "doc": "Position of the value to query."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Returns true if the value at the given position is undefined. A value can be undefined in 4 cases:\n\nIt is a double and its value is NaN (Not a Number).\n\nIt is an integer or boolean with no valid value (arithmetic or out of bounds exception).\n\nIt is an interval with at least one undefined bound.\n\nIt is the result of any ill-defined operation (at with out of bounds index or operations on undefined values for instance)."
+  },
+  {
+   "name": "iterator",
+   "container": "HxArray",
+   "kind": "operator",
+   "signatures": [
+    "HxArray.iterator()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an iterator than can be used within a for statement."
+  },
+  {
+   "name": "add",
+   "container": "HxCollection",
+   "kind": "method",
+   "signatures": [
+    "HxCollection.add(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds the given value to this collection. Only allowed in state STOPPED. This function will fail if the given value is not an integer, is outside of the domain of the list or if this value is already included in this list (keep in mind that a list cannot contain twice the same value)."
+  },
+  {
+   "name": "clear",
+   "container": "HxCollection",
+   "kind": "method",
+   "signatures": [
+    "HxCollection.clear()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Removes all values of this collection. Only allowed in state STOPPED."
+  },
+  {
+   "name": "contains",
+   "container": "HxCollection",
+   "kind": "method",
+   "signatures": [
+    "HxCollection.contains(value)"
+   ],
+   "parameters": [
+    {
+     "name": "value",
+     "type": "int",
+     "doc": "Element whose presence in this collection is to be tested."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Returns true if the collection contains the given value, false otherwise. An exception will be thrown if the provided value is not an integer."
+  },
+  {
+   "name": "count",
+   "container": "HxCollection",
+   "kind": "method",
+   "signatures": [
+    "HxCollection.count()"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of values in the collection. Elements in collections are indexed from 0 to count()-1."
+  },
+  {
+   "name": "index",
+   "container": "HxCollection",
+   "kind": "operator",
+   "signatures": [
+    "HxCollection.index(position)"
+   ],
+   "parameters": [
+    {
+     "name": "position",
+     "type": "int",
+     "doc": "The considered position. Must be non negative and striclty smaller than the number of values in the collection."
+    }
+   ],
+   "returns": "int",
+   "documentation": "Indexer. Gets the value at the given position."
+  },
+  {
+   "name": "iterator",
+   "container": "HxCollection",
+   "kind": "operator",
+   "signatures": [
+    "HxCollection.iterator()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an iterator than can be used within a for statement."
+  },
+  {
+   "name": "add",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.add(other)",
+    "HxExpression.radd(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the sum of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the addition (left or right).\n\nNote that in some cases, this operator can return one of the two operands rather than creating a new expression (sum with constant 0)."
+  },
+  {
+   "name": "and",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.and(other)",
+    "HxExpression.rand(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the logical and of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the product (left or right).\n\nNote that in some cases, this operator can return one of the two operands rather than creating a new expression (logical and with constant 1 or true) or returns the HxExpression representing the constant 0 (logical and with constant 0 or false)."
+  },
+  {
+   "name": "assignable",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.assignable()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "This operator is applied when the = sign is used on an HxExpression. The implemented behavior is to throw an exception. HxExpressions can only be manipulated with the <- operator."
+  },
+  {
+   "name": "context",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.context"
+   ],
+   "parameters": [],
+   "returns": "HxExternalContext",
+   "documentation": "External function context of this expression. Only set and allowed if this expression is an external function."
+  },
+  {
+   "name": "div",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.div(other)",
+    "HxExpression.rdiv(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the division of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the division (left or right).\n\nNote that in some cases, this operator can return the left operand instead of creating a new expression if the right operand is the constant 1."
+  },
+  {
+   "name": "eq",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.eq(other)",
+    "HxExpressionr.req(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new equal expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "geq",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.geq(other)",
+    "HxExpression.rgeq(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new greater or equal expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "gt",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.gt(other)",
+    "HxExpressionr.rgt(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new strictly greater expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "index",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.index(index)"
+   ],
+   "parameters": [
+    {
+     "name": "index",
+     "type": "",
+     "doc": "Can be a bool, an integer or another expression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new at expression. The current expression is used as the array and the argument as the index."
+  },
+  {
+   "name": "isArray",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isArray()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is an array, false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isBool",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isBool()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is a boolean (ie 0 or 1), false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isCollection",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isCollection()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is a collection (list or set), false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isConstant",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isConstant()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is typed as constant in the model, false otherwise."
+  },
+  {
+   "name": "isConstraint",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isConstraint()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is tagged as constraint in the model, false otherwise."
+  },
+  {
+   "name": "isDecision",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isDecision()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is typed as decision in the model, false otherwise."
+  },
+  {
+   "name": "isDouble",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isDouble()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is a double, false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isFunction",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isFunction()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is a function, false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isInt",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isInt()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is an integer, false otherwise. Only allowed in states PAUSED or STOPPED. Note that a boolean is also an integer."
+  },
+  {
+   "name": "isNamed",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isNamed()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression has a name, and false otherwise."
+  },
+  {
+   "name": "isObjective",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isObjective()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is tagged as objective in the model, false otherwise."
+  },
+  {
+   "name": "isRange",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isRange()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if this expression is a range, false otherwise. Only allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "isUndefined",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isUndefined()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the given expression has an undefined value in the best solution found by the solver. An expression can be undefined in 4 cases:\n\nIt is a double and its value is NaN (Not a Number).\n\nIt is an integer or boolean with no valid value (arithmetic or out of bounds exception).\n\nIt is an interval with at least one undefined bound.\n\nIt is the result of any ill-defined operation (at with out of bounds index or operations on undefined values for instance).\n\nOnly allowed in states PAUSED or STOPPED. This method is a shortcut for HxSolution.isUndefined()."
+  },
+  {
+   "name": "isViolated",
+   "container": "HxExpression",
+   "kind": "method",
+   "signatures": [
+    "HxExpression.isViolated()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the given expression is violated in the best solution found by the solver. An expression can be violated in 3 cases:\n\nIt is a constraint and its value is 0.\n\nIt is a double and its value is NaN (Not A Number).\n\nIt is an integer or boolean with no valid value (arithmetic or out of bounds exception).\n\nOnly allowed in states PAUSED or STOPPED. This method is a shortcut for HxSolution.isViolated()."
+  },
+  {
+   "name": "leq",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.leq(other)",
+    "HxExpression.rleq(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new lower or equal expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "linkable",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.linkable()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "This operator is applied when the <- sign is used on an HxExpression. It only returns the current HxExpression, without changing anything"
+  },
+  {
+   "name": "lt",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.lt(other)",
+    "HxExpressionr.rlt(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new strictly lower expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "mod",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.mod(other)",
+    "HxExpression.rmod(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the remainder of the integer division of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the modulo (left or right).\n\nNote that in some cases, this operator can return the HxExpression representing the constant 0 if the right operand is the constant 1."
+  },
+  {
+   "name": "modify",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.modify({MINIMIZE, MAXIMIZE, CONSTRAINT})"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "This operator is called when an expression is used with one of the three special modifiers : MINIMIZE, MAXIMIZE or CONSTRAINT. It adds the expression to the list of objectives or constraints of the current model."
+  },
+  {
+   "name": "mul",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.mul(other)",
+    "HxExpression.rmul(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the product of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the product (left or right).\n\nNote that in some cases, this operator can return one of the two operands rather than creating a new expression (product with constant 1) or returns the HxExpression representing the constant 0 (product with constant 0)."
+  },
+  {
+   "name": "name",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.name"
+   ],
+   "parameters": [],
+   "returns": "String",
+   "documentation": "Name of this expression or the empty string if no name has been set.\n\nThis attribute is read-write but it can only be changed in state MODELING."
+  },
+  {
+   "name": "nbOperands",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.nbOperands"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Number of operands of this expression."
+  },
+  {
+   "name": "neg",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.neg()"
+   ],
+   "parameters": [],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the opposite of the current expression."
+  },
+  {
+   "name": "neq",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.neq(other)",
+    "HxExpression.rneq(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new not equal expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "not",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.not(other)"
+   ],
+   "parameters": [],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the negative of the current expression. NOT(a) = 1 - a."
+  },
+  {
+   "name": "operands",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.operands"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing all the operands of this expression. The returned structure has the following features:\n\nA count field to get the number of operands, e.g. operands.count().\n\nAn overloaded index [] operator to get a specific operand, e.g. operands[0]. The index must be between 0 and operands.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the operands with a for statement."
+  },
+  {
+   "name": "operator",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.operator"
+   ],
+   "parameters": [],
+   "returns": "string",
+   "documentation": "Operator of this expression returned as a string."
+  },
+  {
+   "name": "or",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.or(other)",
+    "HxExpression.ror(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the logical or of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the product (left or right).\n\nNote that in some cases, this operator can return one of the two operands rather than creating a new expression (logical or with constant 0 or false) or returns the HxExpression representing the constant 1 (logical or with constant 1 or true)."
+  },
+  {
+   "name": "pos",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.pos()"
+   ],
+   "parameters": [],
+   "returns": "HxExpression",
+   "documentation": "Returns the same expression without change."
+  },
+  {
+   "name": "range",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.range(other)",
+    "HxExpression.rrange(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new range expression between the current expression and the argument other. This operator exists in two versions depdending on the position of the current expression (left or right)."
+  },
+  {
+   "name": "sub",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.sub(other)",
+    "HxExpression.rsub(other)"
+   ],
+   "parameters": [
+    {
+     "name": "other",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or another HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new expression that is the substraction of the current expression and the argument other. This operator exists in two versions depending on the position of the current expression in the substraction (left or right).\n\nNote that in some cases, this operator can return the left operand instead of creating a new expression if the right operand is the constant 0."
+  },
+  {
+   "name": "ternary",
+   "container": "HxExpression",
+   "kind": "operator",
+   "signatures": [
+    "HxExpression.ternary(trueValue, falseValue)"
+   ],
+   "parameters": [
+    {
+     "name": "trueValue",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or an HxExpression"
+    },
+    {
+     "name": "falseValue",
+     "type": "",
+     "doc": "Can be a bool, an integer, a double or an HxExpression"
+    }
+   ],
+   "returns": "HxExpression",
+   "documentation": "Returns a new if-then-else expression (also called the ternary operator). The current expression is used as the condition and the arguments as true and false values respectively."
+  },
+  {
+   "name": "value",
+   "container": "HxExpression",
+   "kind": "field",
+   "signatures": [
+    "HxExpression.value"
+   ],
+   "parameters": [],
+   "returns": "a number, an array or a collection depending on the type of the expression.",
+   "documentation": "Value of this expression in the best solution found by the solver. This method is a shortcut for HxSolution.getValue() and HxSolution.setValue().\n\nThe type of the returned value depends on the type of the expression. It can be a number if the expression has an integer or double value, an array if the expression is an array, or a collection if the expression is a list or a set decision.\n\nThis attribute is read-write but it can only be changed in state STOPPED and queried in states PAUSED or STOPPED."
+  },
+  {
+   "name": "count",
+   "container": "HxExternalArgumentValues",
+   "kind": "method",
+   "signatures": [
+    "HxExternalArgumentValues.count()"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of argument values. Arguments are indexed from 0 to count()-1."
+  },
+  {
+   "name": "index",
+   "container": "HxExternalArgumentValues",
+   "kind": "operator",
+   "signatures": [
+    "HxExternalArgumentValues.index(position)"
+   ],
+   "parameters": [
+    {
+     "name": "position",
+     "type": "int",
+     "doc": "The considered position. Must be non negative and striclty smaller than the number of arguments."
+    }
+   ],
+   "returns": "",
+   "documentation": "Indexer. Gets the value at the given position."
+  },
+  {
+   "name": "isUndefined",
+   "container": "HxExternalArgumentValues",
+   "kind": "method",
+   "signatures": [
+    "HxExternalArgumentValues.isUndefined(position)"
+   ],
+   "parameters": [
+    {
+     "name": "position",
+     "type": "int",
+     "doc": "Position of the argument to query."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Returns true if the argument at the given position has an undefined value. An undefined value is often the result of an illegal or impossible operation. For example, the square root of a negative number, the addition of 2 opposite infinities, accessing an array or collection outside its bounds…\n\nAttempting to access an argument with an undefined value will raise an exception. It is therefore recommended to check whether or not each argument is undefined before accessing its value. This is particularly true during the feasibility phase, when the probability of incorrect operations is very high."
+  },
+  {
+   "name": "iterator",
+   "container": "HxExternalArgumentValues",
+   "kind": "operator",
+   "signatures": [
+    "HxExternalArgumentValues.iterator()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an iterator than can be used within a for statement."
+  },
+  {
+   "name": "causes",
+   "container": "HxInconsistency",
+   "kind": "field",
+   "signatures": [
+    "HxInconsistency.causes"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing expressions responsible for the inconsistency of this model. The sub problem reduced to these expressions and their operands (recursively) is inconsistent. The returned structure has the following features:\n\nA count field to get the number of expressions in the IIS, e.g. causes.count().\n\nAn overloaded index [] operator to get a specific expression, e.g. causes[0]. The index must be between 0 and causes.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the causes with a for statement."
+  },
+  {
+   "name": "nbCauses",
+   "container": "HxInconsistency",
+   "kind": "field",
+   "signatures": [
+    "HxInconsistency.nbCauses"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Number of expressions responsible for the inconsistency of this model. This method returns 0 if the inconsistency of the problem could not be proven."
+  },
+  {
+   "name": "contains",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.contains(value)"
+   ],
+   "parameters": [
+    {
+     "name": "value",
+     "type": "",
+     "doc": "element whose presence in this interval is to be tested."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Returns true if the interval contains the given value, false otherwise."
+  },
+  {
+   "name": "count",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.count(value)"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the number of elements in the interval. A void or degenerate interval does not contain any element."
+  },
+  {
+   "name": "getEnd",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.getEnd(value)"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the end of the interval. Cannot be called on a void interval as it does not have a valid end."
+  },
+  {
+   "name": "getStart",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.getStart()"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the start of the interval. Cannot be called on a void interval as it does not have a valid start."
+  },
+  {
+   "name": "isDegenerate",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.isDegenerate()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the interval is degenerate. A degenerate interval is an interval with equal start and end bounds. It does not contain any element."
+  },
+  {
+   "name": "isVoid",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.isVoid(val)"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the interval is void. A void interval is an empty interval with no valid start or end bounds."
+  },
+  {
+   "name": "toString",
+   "container": "HxInterval",
+   "kind": "method",
+   "signatures": [
+    "HxInterval.toString(value)"
+   ],
+   "parameters": [],
+   "returns": "string",
+   "documentation": "Returns a string representation of the interval."
+  },
+  {
+   "name": "close",
+   "container": "HxModel",
+   "kind": "method",
+   "signatures": [
+    "HxModel.close()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Closes the model. Only allowed in state MODELING. When this method is called, the solver is placed in state STOPPED.\n\nOnce the model is closed, no expressions, constraints or objectives can be added or removed unless the model is reopened. The model must be closed before starting its resolution."
+  },
+  {
+   "name": "constraints",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.constraints"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing all constraints added to this model. The returned structure has the following features:\n\nA count field to get the number of constraints, e.g. constraints.count().\n\nAn overloaded index [] operator to get a specific constraint, e.g. constraints[0]. The index must be between 0 and constraints.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the constraints with a for statement."
+  },
+  {
+   "name": "decisions",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.decisions"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing all decisions added to this model. The returned structure has the following features:\n\nA count field to get the number of decisions, e.g. decisions.count().\n\nAn overloaded index [] operator to get a specific decision, e.g. decisions[0]. The index must be between 0 and decisions.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the decisions with a for statement."
+  },
+  {
+   "name": "expressions",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.expressions"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing all expressions added to this model. The returned structure has the following features:\n\nA count field to get the number of expressions, e.g. expressions.count().\n\nAn overloaded index [] operator to get a specific expression, e.g. expressions[0]. The index must be between 0 and expressions.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the expressions with a for statement."
+  },
+  {
+   "name": "isClosed",
+   "container": "HxModel",
+   "kind": "method",
+   "signatures": [
+    "HxModel.isClosed()"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the model is closed, false otherwise."
+  },
+  {
+   "name": "nbConstraints",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.nbConstraints"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of constraints added to this model so far."
+  },
+  {
+   "name": "nbDecisions",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.nbDecisions"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of decisions added to this model so far."
+  },
+  {
+   "name": "nbExpressions",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.nbExpressions"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of expressions added to this model so far."
+  },
+  {
+   "name": "nbObjectives",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.nbObjectives"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of objectives added to this model so far."
+  },
+  {
+   "name": "nbOperands",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.nbOperands"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Number of operands added to this model so far. This corresponds to the number of operands for all expressions declared in the model. It is an analog of the number of non zeros in matrix model encountered in mathematical programming: it gives an hint about the size and the density of your model."
+  },
+  {
+   "name": "objectiveDirections",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.objectiveDirections"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing strings MINIMIZE or MAXIMIZE.",
+   "documentation": "This field returns a readonly map-like structure containing the directions of the objectives expressed as strings (MINIMIZE or MAXIMIZE). The returned structure has the following features:\n\nA count field to get the number of objectives, e.g. objectiveDirections.count().\n\nAn overloaded index [] operator to get a specific objective direction, e.g. objectiveDirections[0]. The index must be between 0 and objectiveDirections.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the objective directions with a for statement."
+  },
+  {
+   "name": "objectives",
+   "container": "HxModel",
+   "kind": "field",
+   "signatures": [
+    "HxModel.objectives"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing objects of type HxExpression.",
+   "documentation": "This field returns a readonly map-like structure containing all objectives added to this model. The returned structure has the following features:\n\nA count field to get the number of objectives, e.g. objectives.count().\n\nAn overloaded index [] operator to get a specific objective, e.g. objectives[0]. The index must be between 0 and objectives.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the objectives with a for statement."
+  },
+  {
+   "name": "open",
+   "container": "HxModel",
+   "kind": "method",
+   "signatures": [
+    "HxModel.open()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Reopens the model. Only allowed in state STOPPED. When this method is called, the solver is placed in state MODELING.\n\nIn this state, the model can be modified: it is possible to add new expressions, constraints or objectives, modify expression operands, and remove existing constraints and objectives. However, existing expressions cannot be deleted."
+  },
+  {
+   "name": "removeConstraint",
+   "container": "HxModel",
+   "kind": "method",
+   "signatures": [
+    "HxModel.removeConstraint(expr)",
+    "HxModel.removeConstraint(constraintIndex)"
+   ],
+   "parameters": [
+    {
+     "name": "expr",
+     "type": "HxExpression",
+     "doc": "Expression."
+    },
+    {
+     "name": "constraintIndex",
+     "type": "",
+     "doc": "Index of the constraint to remove."
+    }
+   ],
+   "returns": "",
+   "documentation": "Removes the given expression from the list of constraints. If the expression was not constrained, this method does nothing and returns immediately. Only allowed in state MODELING."
+  },
+  {
+   "name": "removeObjective",
+   "container": "HxModel",
+   "kind": "method",
+   "signatures": [
+    "HxModel.removeObjective(objectiveIndex)"
+   ],
+   "parameters": [
+    {
+     "name": "objectiveIndex",
+     "type": "",
+     "doc": "position of the objective to remove, must be an integer."
+    }
+   ],
+   "returns": "",
+   "documentation": "Removes the objective at the given position in the list of objectives. Note that the objectives created after the removed one have their index decreased by 1. Phases are not modified when an objective is removed. It is the user’s responsibility to change the objective index of each phase to keep it coherent (with HxPhase.optimizedObjective), or to disable it (with HxPhase.enabled). Only allowed in state MODELING."
+  },
+  {
+   "name": "iterationBetweenTicks",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.iterationBetweenTicks"
+   ],
+   "parameters": [],
+   "returns": "int (must be strictly positive)",
+   "documentation": "Number of iterations between two events of type ITERATION_TICKED. The default number of iterations between ticks is set to 10,000.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "iterationLimit",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.iterationLimit"
+   ],
+   "parameters": [],
+   "returns": "int (must be positive or zero)",
+   "documentation": "Maximum number of iterations before the solver stops.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "logFile",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.logFile"
+   ],
+   "parameters": [],
+   "returns": "String or nil",
+   "documentation": "Path of the Hexaly Optimizer log file. If the path is nil, no log will be saved. To tune the logging verbosity, see verbosity."
+  },
+  {
+   "name": "nbDisplayedObjectives",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.nbDisplayedObjectives"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Maximum number of objectives to display.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "nbDisplayedViolatedConstraints",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.nbDisplayedViolatedConstraints"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Maximum number of violated constraints to display.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "nbThreads",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.nbThreads"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Number of threads used to parallelize the search. The number of threads must be a positive integer. The default number of threads is set to 0 which means that the number of threads is automatically adapted to your computer and to your optimization model. When set to 0, the system will create at least 4 threads by default, as it is recommended to have at least 4 physical cores for nominal performance.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "objectiveThresholds",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.objectiveThresholds"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Thresholds of the objectives. If an objective is minimized (resp. maximized), then the optimization of this objective is stopped as soon as this lower (resp. upper) threshold is reached. It can be useful for goal programming.\n\nThis field returns a readonly map-like structure with the following features:\n\nA count field e.g. objectiveThresholds.count(). This count field is always equal to the number of objectives present in the model.\n\nAn overloaded index [] operator to get a threshold for a specific objective, e.g. objectiveThresholds[0]. The index must be between 0 and objectiveThresholds.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the objective thresholds with a for statement.\n\nThis attribute is read-write but it can only be read in states PAUSED and STOPPED and write in state STOPPED."
+  },
+  {
+   "name": "seed",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.seed"
+   ],
+   "parameters": [],
+   "returns": "int (must be positive or zero)",
+   "documentation": "Seed of the pseudo-random number generator used by the solver. The seed must be a positive integer. The default seed is set to 0.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "timeBetweenDisplays",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.timeBetweenDisplays"
+   ],
+   "parameters": [],
+   "returns": "int (must be strictly positive)",
+   "documentation": "Time in seconds between two consecutive displays in console while the solver is running. The default time between displays is set to 1 second.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "timeBetweenTicks",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.timeBetweenTicks"
+   ],
+   "parameters": [],
+   "returns": "int (must be strictly positive)",
+   "documentation": "Time in seconds between two events of type TIME_TICKED. The default time between ticks is set to 1 second.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "timeLimit",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.timeLimit"
+   ],
+   "parameters": [],
+   "returns": "int (must be positive or zero)",
+   "documentation": "Time limit in seconds before the solver stops.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "verbosity",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.verbosity"
+   ],
+   "parameters": [],
+   "returns": "int (0, 1 or 2)",
+   "documentation": "Verbosity level of the solver. The default verbosity is set to 1. There are 3 defined verbosity levels:\n\n0: All the traces are disabled.\n\n1: Normal verbosity. This is the default level.\n\n2: Detailed verbosity. Displays statistics during the search.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "warningLevel",
+   "container": "HxParam",
+   "kind": "field",
+   "signatures": [
+    "HxParam.warningLevel"
+   ],
+   "parameters": [],
+   "returns": "int (0, 1 or 2)",
+   "documentation": "Warning level of the solver. The warning computation behavior depends on this parameter. There are 3 different levels:\n\n0: Warning computation is disabled\n\n1: Normal level. Warning computation is enabled by default but may be automatically disabled for very large instances\n\n2: Force warning computation on all instances, including large ones.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "enabled",
+   "container": "HxPhase",
+   "kind": "field",
+   "signatures": [
+    "HxPhase.enabled"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Status of this phase. The solver only optimize enabled phases. Disabling a phase can be useful when an objective has been removed from the model. By default, a phase is enabled.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "iterationLimit",
+   "container": "HxPhase",
+   "kind": "field",
+   "signatures": [
+    "HxPhase.iterationLimit"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Number of iterations of this phase. The default number of iterations is set to the largest positive integer on 64 bits, that is 2^63-1 = 9,223,372,036,854,775,807 > 10^18.\n\nNote that if the optimal value of an objective is found before the end of the corresponding phase, the remaining iterations will be transferred to the next phase.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "optimizedObjective",
+   "container": "HxPhase",
+   "kind": "field",
+   "signatures": [
+    "HxPhase.optimizedObjective"
+   ],
+   "parameters": [],
+   "returns": "int (must be positive or zero)",
+   "documentation": "Optimized objective of this phase. When multiple objectives are declared, these objectives are optimized in lexicographic order (in the order of their declaration in the model). Thus, if k objectives 0, ..., k-1 are declared, each objective i can be optimized while maintaining the values of objectives 0, ..., i-1 previously obtained and ignoring the values of objectives i+1, ..., k-1.\n\nBy default, the optimized objective corresponds to the last objective declared in the model.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "timeLimit",
+   "container": "HxPhase",
+   "kind": "field",
+   "signatures": [
+    "HxPhase.timeLimit"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Time limit of this phase in seconds. Note that the “real” time (that is, total time) spent to resolve the model is considered here and not only the CPU time). The default time limit is set to the largest positive integer on 32 bits, that is 2^31-1 = 2,147,483,647 > 10^9.\n\nNote that if the optimal value of an objective is found before the end of the corresponding phase, the remaining time will be transferred to the next phase.\n\nThis attribute is read-write but it can only be changed in states MODELING or STOPPED."
+  },
+  {
+   "name": "clear",
+   "container": "HxSolution",
+   "kind": "method",
+   "signatures": [
+    "HxSolution.clear()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Clear the solution and set all decisions to zero. Only allowed in state STOPPED."
+  },
+  {
+   "name": "getValue",
+   "container": "HxSolution",
+   "kind": "method",
+   "signatures": [
+    "HxSolution.getValue(expression)"
+   ],
+   "parameters": [
+    {
+     "name": "expression",
+     "type": "",
+     "doc": "Expression for which you want the value"
+    }
+   ],
+   "returns": "a number, an array or a collection depending on the type of the expression.",
+   "documentation": "Returns the value of the given expression in this solution. The type of the returned value depends on the type of the expression. It can be a number if the expression has an integer or double value, an array if the expression is an array, or a collection if the expression is a list or a set decision.\n\nOnly allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "objectiveBounds",
+   "container": "HxSolution",
+   "kind": "field",
+   "signatures": [
+    "HxSolution.objectiveBounds"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing numbers (integers or doubles).",
+   "documentation": "Bounds computed by the solver for all objectives. This field returns a readonly map-like structure with the following features:\n\nA count field e.g. objectiveBounds.count(). This count field is always equal to the number of objectives present in the model.\n\nAn overloaded index [] operator to get a bound for a specific objective, e.g. objectiveBounds[0]. The index must be between 0 and objectiveBounds.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the objective bounds with a for statement.\n\nIf the solver has never been launched or if no bound was found for a particular objective, an infinite or a very large number is returned.\n\nOnly allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "objectiveGaps",
+   "container": "HxSolution",
+   "kind": "field",
+   "signatures": [
+    "HxSolution.objectiveGaps"
+   ],
+   "parameters": [],
+   "returns": "map-like structure containing doubles.",
+   "documentation": "Gaps computed by the solver for all objectives. This field returns a readonly map-like structure with the following features:\n\nA count field e.g. objectiveGaps.count(). This count field is always equal to the number of objectives present in the model.\n\nAn overloaded index [] operator to get a bound for a specific objective, e.g. objectiveGaps[0]. The index must be between 0 and objectiveGaps.count() - 1. Accessing a value outside these bounds throws an exception.\n\nAn overloaded iterator operator to iterate over the objective gaps with a for statement.\n\nThe gap for feasible solutions is defined as:\n\nInfeasible solutions have an infinite gap.\n\nOnly allowed in states PAUSED or STOPPED."
+  },
+  {
+   "name": "setValue",
+   "container": "HxSolution",
+   "kind": "method",
+   "signatures": [
+    "HxSolution.setValue(expression, value)"
+   ],
+   "parameters": [
+    {
+     "name": "expr",
+     "type": "",
+     "doc": "Decision."
+    },
+    {
+     "name": "value",
+     "type": "",
+     "doc": "Value assigned to the decision in this solution."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets the value of the given expression in this solution. Only decisions can be set. The value must be an integer or a double depending on the type of the decision to set. If you want to modify the decisions of type collection (set or list), you should directly modify the collection returned by the method getValue().\n\nIf the solver was not launched, this value will be used as an initial value for the decision. Only allowed in state STOPPED."
+  },
+  {
+   "name": "status",
+   "container": "HxSolution",
+   "kind": "field",
+   "signatures": [
+    "HxSolution.status"
+   ],
+   "parameters": [],
+   "returns": "a string among INCONSISTENT, INFEASIBLE, FEASIBLE or OPTIMAL.",
+   "documentation": "Status of the solution. Only allowed in states PAUSED or STOPPED. The returned value can be one of the following strings:\n\nINCONSISTENT: Solution and model are inconsistent. The solver was able to prove that the model admits no feasible solution. Note that even a model without any constraint can be inconsistent, because some computations can yield undefined results. For instance, computing, SQRT(x) with negative x yields an undefined value, which causes the solution to be invalid if it is used in an objective or a constraint (directly or indirectly).\n\nINFEASIBLE: Solution is infeasible (some constraints are violated).\n\nFEASIBLE: Solution is feasible but optimality was not proven.\n\nOPTIMAL: Solution is optimal (all objective bounds are reached)."
+  },
+  {
+   "name": "nbIterations",
+   "container": "HxStatistics",
+   "kind": "field",
+   "signatures": [
+    "HxStatistics.nbIterations"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Number of iterations.\n\nThis attribute is read-only and can only be queried in states PAUSED or STOPPED."
+  },
+  {
+   "name": "runningTime",
+   "container": "HxStatistics",
+   "kind": "field",
+   "signatures": [
+    "HxStatistics.runningTime"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Running time in seconds. Note that is the “real” time spent (and not only the CPU or system time).\n\nThis attribute is read-only and can only be queried in states PAUSED or STOPPED."
+  },
+  {
+   "name": "add",
+   "container": "Map",
+   "kind": "method",
+   "signatures": [
+    "add(value)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Adds the given value in the map with key equals to the largest integer key presents in the map plus one or zero if no integer key exists."
+  },
+  {
+   "name": "count",
+   "container": "Map",
+   "kind": "method",
+   "signatures": [
+    "count()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Counts the number of values in the map."
+  },
+  {
+   "name": "keys",
+   "container": "Map",
+   "kind": "method",
+   "signatures": [
+    "keys()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the keys of the map in a new map."
+  },
+  {
+   "name": "values",
+   "container": "Map",
+   "kind": "method",
+   "signatures": [
+    "values()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the values of the map in a new map."
+  },
+  {
+   "name": "init",
+   "container": "Random",
+   "kind": "method",
+   "signatures": [
+    "init()",
+    "init(seed)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Re-initializes the random generator with the given seed or a new seed. The seed is optional. If seed is omitted, the current system time is used to initialize the generator."
+  },
+  {
+   "name": "next",
+   "container": "Random",
+   "kind": "method",
+   "signatures": [
+    "next(b)",
+    "next(a, b)"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Returns the next random integer N such that a <= N < b for a <= b and b < N <= a for b < a. The generated numbers are uniformly distributed between the open range induced by a and b."
+  },
+  {
+   "name": "nextLogNormal",
+   "container": "Random",
+   "kind": "method",
+   "signatures": [
+    "nextLogNormal()",
+    "nextLogNormal(mu, sigma)"
+   ],
+   "parameters": [
+    {
+     "name": "mu",
+     "type": "double",
+     "doc": "Mean of the normal distribution"
+    },
+    {
+     "name": "sigma",
+     "type": "double",
+     "doc": "Standard deviation. Must be greather than 0."
+    }
+   ],
+   "returns": "",
+   "documentation": "Log normal distribution."
+  },
+  {
+   "name": "nextNormal",
+   "container": "Random",
+   "kind": "method",
+   "signatures": [
+    "nextNormal()",
+    "nextNormal(mu, sigma)"
+   ],
+   "parameters": [
+    {
+     "name": "mu",
+     "type": "double",
+     "doc": "Mean of the normal distribution"
+    },
+    {
+     "name": "sigma",
+     "type": "double",
+     "doc": "Standard deviation."
+    }
+   ],
+   "returns": "",
+   "documentation": "Normal distribution."
+  },
+  {
+   "name": "nextUniform",
+   "container": "Random",
+   "kind": "method",
+   "signatures": [
+    "nextUniform(a, b)"
+   ],
+   "parameters": [],
+   "returns": "double",
+   "documentation": "Returns the next floating point number N such that a <= N < b for a <= b and b < N <= a for b < a. The generated numbers are uniformly distributed between the open range induced by a and b.\n\nThis method generates floats with 52 bits of precision on the mantissa."
+  },
+  {
+   "name": "close",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "close()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Closes the current stream. If the stream is already closed, do nothing. Note that one once no more value refers to a stream, it is automatically closed."
+  },
+  {
+   "name": "eof",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "eof()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the end of file is reached."
+  },
+  {
+   "name": "read",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "read(n)"
+   ],
+   "parameters": [],
+   "returns": "String",
+   "documentation": "Reads ands returns up to n characters in the stream as a string. The returned string can have less than n characters if the end of the stream is reached before."
+  },
+  {
+   "name": "readDouble",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "readDouble()"
+   ],
+   "parameters": [],
+   "returns": "double",
+   "documentation": "Reads and returns the next floating-point number available in the stream. After calling this function, the stream cursor is positioned at the next non whitespace character or at the end of the stream if the remaining characters contains only whitespaces (see string.isWhitespace() for the definition of a whitespace). If the read sequence cannot be converted to a valid integer, an error is thrown. If the stream is already positioned at the end-of-file or is not readable, an error is thrown."
+  },
+  {
+   "name": "readInt",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "readInt()"
+   ],
+   "parameters": [],
+   "returns": "int",
+   "documentation": "Reads and returns the next integer available in the stream. After calling this function, the stream cursor is positioned at the next non whitespace character or at the end of the stream if the remaining characters contains only whitespaces (see string.isWhitespace() for the definition of a whitespace). If the read sequence cannot be converted to a valid integer, an error is thrown. If the stream is already positioned at the end-of-file or is not readable, an error is thrown."
+  },
+  {
+   "name": "readString",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "readString()"
+   ],
+   "parameters": [],
+   "returns": "String",
+   "documentation": "Reads and returns the next sequence of non whitespace characters. After calling this function, the stream cursor is positioned at the start of the next string or at the end of the stream if the remaining characters contains only whitespaces (see string.isWhitespace() for the definition of a whitespace). If the file is already positioned at the end-of-file or is not readable, an error is thrown."
+  },
+  {
+   "name": "readln",
+   "container": "StreamReader",
+   "kind": "method",
+   "signatures": [
+    "readln()"
+   ],
+   "parameters": [],
+   "returns": "String",
+   "documentation": "Reads ands returns the next line in the stream. After calling this function, the stream cursor is positioned at the start of the next line or at the end of the stream if no characters are available. If the stream is not readable or if no line is available, an error is thrown. Note that the line terminator is trimmed and is not returned."
+  },
+  {
+   "name": "close",
+   "container": "StreamWriter",
+   "kind": "method",
+   "signatures": [
+    "close()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Closes the current stream. If the stream is already closed, do nothing. Note that one once no more value refers to a stream, it is automatically closed."
+  },
+  {
+   "name": "flush",
+   "container": "StreamWriter",
+   "kind": "method",
+   "signatures": [
+    "flush()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Flush the stream. Useful for buffered streams."
+  },
+  {
+   "name": "print",
+   "container": "StreamWriter",
+   "kind": "method",
+   "signatures": [
+    "print([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Writes the arguments in the stream. The values will be converted to strings. If an argument is not convertible to a string, an error is thrown. Arguments are written without space or special formatting."
+  },
+  {
+   "name": "println",
+   "container": "StreamWriter",
+   "kind": "method",
+   "signatures": [
+    "println([arg0[, arg1[, ...]]])"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Same as print() but adds a new line in the stream."
+  },
+  {
+   "name": "endsWith",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "endsWith(suffix)"
+   ],
+   "parameters": [
+    {
+     "name": "prefix",
+     "type": "String",
+     "doc": "The suffix."
+    }
+   ],
+   "returns": "",
+   "documentation": "Returns true if the string ends with the given suffix. If the suffix is an empty string, returns true."
+  },
+  {
+   "name": "indexOf",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "indexOf(search)",
+    "indexOf(search, start)"
+   ],
+   "parameters": [
+    {
+     "name": "search",
+     "type": "String",
+     "doc": "Substring to search"
+    },
+    {
+     "name": "start",
+     "type": "int",
+     "doc": "The position to start the search from. If the start position is negative, an exception is thrown."
+    }
+   ],
+   "returns": "",
+   "documentation": "Returns the first position of the substring search in the string. If no start position is given, the search starts at the beginning of the string. Returns -1 if the substring is not found."
+  },
+  {
+   "name": "isDigit",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isDigit()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only digits and there is at least one character, false otherwise. A character is a digit only it its unicode general category is “Number, Digit” (Nd). “0123456789” are examples of digits."
+  },
+  {
+   "name": "isLetter",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isLetter()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only letters and there is at least one character, false otherwise. A character is a letter only if its unicode general category is any of the following:\n\nLetter, Uppercase (Lu)\n\nLetter, Lowercase (Ll)\n\nLetter, Titlecase (Lt)\n\nLetter, Modifier (Lm)\n\nLetter, Other (Lo)"
+  },
+  {
+   "name": "isLower",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isLower()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only characters that are lowercase and there is at least one character, false otherwise. A character is lowercase only if its unicode general category is “Letter, Lowercase” (Ll)."
+  },
+  {
+   "name": "isSpace",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isSpace()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only spaces and there is at least one character, false otherwise. A character is a space only if its unicode general category is any of the following:\n\nSeparator, Space (Zs)\n\nSeparator, Line (Zl)\n\nSeparator, Paragraph (Zp)\n\nThe definitions of “spaces” and “whitespaces” are quite similar, and a space is also a whitespace. But whitespaces also include special control characters like “\\n” or “\\t” that are not labeled as “spaces” by the unicode consortium. Read isWhitespace() for more details."
+  },
+  {
+   "name": "isUpper",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isUpper()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only characters that are uppercase and there is at least one character, false otherwise. A character is uppercase only if its unicode general category is “Letter, Uppercase” (Lu)."
+  },
+  {
+   "name": "isWhitespace",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "isWhitespace()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the string contains only whitespaces and there is at least one character, false otherwise. A character is a space only if it has the property “WSpace=Y” in the unicode database. The complete list of whitespaces contains:\n\nAll characters with general category “Separator, Space” (Zs)\n\nAll characters with general category “Separator, Line” (Zl)\n\nAll characters with general category “Separator, Paragraph” (Zp)\n\nThe control character “Horizontal tabulation” (U+0009)\n\nThe control character “Line feed” (U+000A)\n\nThe control character “Vertical tabulation” (U+000B)\n\nThe control character “Form feed” (U+000C)\n\nThe control character “Carriage return” (U+000D)\n\nThe control character “Next line” (U+0085)"
+  },
+  {
+   "name": "length",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "length()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the length of the string as integer."
+  },
+  {
+   "name": "replace",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "replace(search, replace)"
+   ],
+   "parameters": [
+    {
+     "name": "search",
+     "type": "String",
+     "doc": "Search string. Throws an exception if this argument is empty."
+    },
+    {
+     "name": "replace",
+     "type": "String",
+     "doc": "Replace string."
+    }
+   ],
+   "returns": "",
+   "documentation": "Return a copy of the string with all occurrences of substring search replaced by replace."
+  },
+  {
+   "name": "split",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "split()",
+    "split(delimiter)"
+   ],
+   "parameters": [
+    {
+     "name": "delimiter",
+     "type": "String",
+     "doc": "Delimiter used to split the string. This parameter is optionnal. If no delimiter is provided, whitespaces are used by default."
+    }
+   ],
+   "returns": "Map",
+   "documentation": "Returns a map that contains the substrings of this string object that are delimited by the given delimiter. For example \"a::b::::c\".split(\"::\") returns {\"a\", \"b\", \"\", \"c\"}.\n\nIf no delimiter is provided, whitespaces are used as delimiter. In that case, consecutive whitespaces are considered as a single separator. Thus a string composed of whitespaces only, always returns an empty map {}. See isWhitespace() for the exact definition of a whitespace.\n\nSplitting an empty string with or without a delimiter always returns an empty map {}."
+  },
+  {
+   "name": "startsWith",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "startsWith(prefix)"
+   ],
+   "parameters": [
+    {
+     "name": "prefix",
+     "type": "String",
+     "doc": "The prefix."
+    }
+   ],
+   "returns": "",
+   "documentation": "Returns true if the string starts with the given prefix. If the prefix is an empty string, returns true."
+  },
+  {
+   "name": "substring",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "substring(start)",
+    "substring(start, length)"
+   ],
+   "parameters": [
+    {
+     "name": "start",
+     "type": "int",
+     "doc": "Start position. If the start position is negative or greater than the length of the string, an exception is thrown."
+    },
+    {
+     "name": "length",
+     "type": "int",
+     "doc": "Length of the substring (optionnal). If the given length is negative, an exception is thrown."
+    }
+   ],
+   "returns": "",
+   "documentation": "Returns a new string that is a substring of this string. There are two versions of this method:\n\nIn the first version, the method takes one argument. In that case, the returned substring starts at the given position and goes to the end of the string.\n\nIn the second version, the returned substring starts at the given position and goes to the character at position start + length - 1."
+  },
+  {
+   "name": "toDouble",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "toDouble()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns a float representation of this string object. If this string does not represent a float or if the conversion is not possible (out of range), an exception is thrown."
+  },
+  {
+   "name": "toInt",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "toInt()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns an integer representation of this string object. If this string does not represent an integer or if the conversion is not possible (out of range), an exception is thrown."
+  },
+  {
+   "name": "toLowerCase",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "toLowerCase()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns a new string with all the characters converted to lower case."
+  },
+  {
+   "name": "toUpperCase",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "toUpperCase()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns a new string with all the characters converted to upper case."
+  },
+  {
+   "name": "trim",
+   "container": "String",
+   "kind": "method",
+   "signatures": [
+    "trim()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns a copy of the string with leading and trailing whitespaces removed. The list of whitespaces is the same as the list used for the method isWhitespace()."
+  },
+  {
+   "name": "add",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "add(timespan)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addDays",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "addDays(nbDays)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addHours",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "addHours(nbHours)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addMilliseconds",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "addMilliseconds(nbMillis)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addMinutes",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "addMinutes(nbMinutes)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "addSeconds",
+   "container": "TimeSpan",
+   "kind": "method",
+   "signatures": [
+    "addSeconds(nbSeconds)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "days",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "days"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "hours",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "hours"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "milliseconds",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "milliseconds"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "minutes",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "minutes"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "seconds",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "seconds"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "totalDays",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "totalDays"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "totalHours",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "totalHours"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "totalMilliseconds",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "totalMilliseconds"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "totalMinutes",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "totalMinutes"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "totalSeconds",
+   "container": "TimeSpan",
+   "kind": "field",
+   "signatures": [
+    "totalSeconds"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "createSheet",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "createSheet(sheetName)"
+   ],
+   "parameters": [
+    {
+     "name": "sheetName",
+     "type": "String",
+     "doc": "Name of the sheet."
+    }
+   ],
+   "returns": "XlsxSheet",
+   "documentation": "Creates a new sheet in the workbook with the specified name. The new sheet is appended at the end of the workbook. Retuns the instance of the XlsxSheet created. An exception is thrown if a sheet with the specified sheetName already exists."
+  },
+  {
+   "name": "deleteSheet",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "deleteSheet(sheetNumber)",
+    "deleteSheet(sheetName)"
+   ],
+   "parameters": [
+    {
+     "name": "sheetNumber",
+     "type": "int",
+     "doc": "Index of the sheet (starting at 0)."
+    },
+    {
+     "name": "sheetName",
+     "type": "String",
+     "doc": "Name of the sheet."
+    }
+   ],
+   "returns": "",
+   "documentation": "Deletes a sheet from the workbook by its index or by its name. If an integer is specified, the index must be positive or zero and must be strictly smaller than the number of sheets in the workbook. If a string is specified, a sheet with the same name must exist in the workbook. Otherwise, an exception will be thrown. The sheet name is case-sensitive.\n\nAn Excel workbook must contain at least one sheet. Therefore, deleting the last sheet of a workbook will also throw an exception."
+  },
+  {
+   "name": "getSheet",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "getSheet(sheetNumber)",
+    "getSheet(sheetName)"
+   ],
+   "parameters": [
+    {
+     "name": "sheetNumber",
+     "type": "int",
+     "doc": "Index of the sheet (starting at 0)."
+    },
+    {
+     "name": "sheetName",
+     "type": "String",
+     "doc": "Name of the sheet."
+    }
+   ],
+   "returns": "XlsxSheet",
+   "documentation": "Retrieves a sheet from the workbook by its index or by its name. If an integer is specified, the index must be positive or zero and must be strictly smaller than the number of sheets in the workbook. If a string is specified, a sheet with the same name must exist in the workbook. Otherwise, an exception will be thrown. The sheet name is case-sensitive."
+  },
+  {
+   "name": "getSheetNames",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "getSheetNames()"
+   ],
+   "parameters": [],
+   "returns": "Map (array of strings)",
+   "documentation": "Returns a map of all sheet names in the workbook, indexed by their position, starting at 0."
+  },
+  {
+   "name": "save",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "save()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Saves changes made to the workbook back to the original file. The file name used is the one entered when the workbook was opened or created."
+  },
+  {
+   "name": "saveAs",
+   "container": "XlsxDocument",
+   "kind": "method",
+   "signatures": [
+    "saveAs(fileName)"
+   ],
+   "parameters": [
+    {
+     "name": "fileName",
+     "type": "String",
+     "doc": "Path to the XLSX file."
+    }
+   ],
+   "returns": "",
+   "documentation": "Saves changes made to the workbook as a new XLSX file at the given path. This will overwrite any existing file at the specified fileName path."
+  },
+  {
+   "name": "columnCount",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "columnCount()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the index of the last used column plus one. Note that this number does not necessarily correspond to the number of non-empty columns in the sheet."
+  },
+  {
+   "name": "getBoolValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getBoolValue(cellAddress)",
+    "getBoolValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "bool",
+   "documentation": "Gets the boolean value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row. An exception is thrown if there is no value or if the value is not a boolean."
+  },
+  {
+   "name": "getDateTimeValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getDateTimeValue(cellAddress)",
+    "getDateTimeValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "datetime.DateTime",
+   "documentation": "Gets the datetime.DateTime value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row. An exception is thrown if there is no value or if the value cannot be read as a float.\n\nNote that Excel has no true date type. Internally, Excel stores dates and times as floating point numbers, where the integer part represents the number of days since January 1, 1900 and the fractional part represents the time of day. For example, 1.0 corresponds to 1900-01-01 00:00:00, while 2.5 corresponds to 1900-01-02 12:00:00."
+  },
+  {
+   "name": "getDoubleValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getDoubleValue(cellAddress)",
+    "getDoubleValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "double",
+   "documentation": "Gets the double value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row. An exception is thrown if there is no value or if the value is not a number (neither a double nor an integer)."
+  },
+  {
+   "name": "getIntValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getIntValue(cellAddress)",
+    "getIntValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "int",
+   "documentation": "Gets the integer value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row. An exception is thrown if there is no value or if the value is not an integer. In particular, any call to this function on a cell with a decimal part will return an exception. Use getDoubleValue() for this."
+  },
+  {
+   "name": "getStringValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getStringValue(cellAddress)",
+    "getStringValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "String",
+   "documentation": "Gets the string value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row. An exception is thrown if there is no value or if the value is not a string.\n\nNote in particular that numbers are not converted to strings, and that an empty cell is not equivalent to an empty string. In these cases, an exception will also be thrown."
+  },
+  {
+   "name": "getValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "getValue(cellAddress)",
+    "getValue(columnNumber, rowNumber)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "String, int, double, bool or nil",
+   "documentation": "Gets the value of the cell using Excel-style cell adressing (e.g. “A1”, “B2”) or with the specified column and row.\n\nThe type of value returned depends on the cell’s native type. It can be a string, a boolean, an integer, a double or nil. Nil is returned if the cell contains no value."
+  },
+  {
+   "name": "readRangeValues",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "readRangeValues(columnNumber, rowNumber, nbCols, nbRows)",
+    "readRangeValues(topLeftAddress, bottomRightAddress)",
+    "readRangeValues(rangeAddress)"
+   ],
+   "parameters": [
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the starting column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the starting row (starting at 0)."
+    },
+    {
+     "name": "nbCols",
+     "type": "int",
+     "doc": "Number of columns to read."
+    },
+    {
+     "name": "nbRows",
+     "type": "int",
+     "doc": "Number of rows to read."
+    },
+    {
+     "name": "topLeftAddress",
+     "type": "String",
+     "doc": "Address of the first top-left cell."
+    },
+    {
+     "name": "bottomRightAddress",
+     "type": "String",
+     "doc": "Address of the last bottom-right cell"
+    },
+    {
+     "name": "rangeAddress",
+     "type": "String",
+     "doc": "Range to read in Excel notation (e.g. A2:C18)"
+    }
+   ],
+   "returns": "Map",
+   "documentation": "Reads a set of rows and columns and returns it as a map of maps. This method is the preferred way to retrieve a large volume of data from an Excel workbook. It’s much faster than calling individual methods such as getValue().\n\nThe range can be specified in 3 different ways:\n\nEither by providing the coordinates of the first cell (0-based) followed by the number of columns and rows.\n\nBy providing the coordinates of the top-left cell and the bottom-right cell in Excel notation.\n\nOr by providing a range in Excel notation, i.e. 2 coordinates separated by a colon, e.g. “A2:C18”.\n\nThe first dimension of the returned map of maps contains the rows read. The first dimension contains as many elements as the number of rows requested, regardless of whether the rows are empty or not.\n\nThe second dimension contains the cells read for each row, with one value per column. The type of each value read depends on the cell’s native value. The map of maps can therefore contain a combination of booleans, integers, doubles or strings.\n\nWhen a cell is empty, no value is stored in the map, but the corresponding key in the map is incremented by 1. This is in conformity with the map rules, which make no distinction between an unassigned key and a key whose associated value is nil.\n\nWhen a cell contains an error in Excel (like #NAME? or #DIV/0!), these errors are reported as a Not A Number value (nan in HXM)."
+  },
+  {
+   "name": "rowCount",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "rowCount()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the index of the last used row plus one. Note that this number does not necessarily correspond to the number of non-empty rows in the sheet."
+  },
+  {
+   "name": "setBoolValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setBoolValue(cellAddress, value)",
+    "setBoolValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    },
+    {
+     "name": "value",
+     "type": "bool",
+     "doc": "Value to write."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets a boolean value to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row."
+  },
+  {
+   "name": "setDateTimeValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setDateTimeValue(cellAddress, value)",
+    "setDateTimeValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets an instance of datetime.DateTime to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row. The cell will be formatted as a Date cell."
+  },
+  {
+   "name": "setDoubleValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setDoubleValue(cellAddress, value)",
+    "setDoubleValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    },
+    {
+     "name": "value",
+     "type": "double",
+     "doc": "Value to write."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets a double value to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row."
+  },
+  {
+   "name": "setIntValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setIntValue(cellAddress, value)",
+    "setIntValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    },
+    {
+     "name": "value",
+     "type": "int",
+     "doc": "Value to write."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets an integer value to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row."
+  },
+  {
+   "name": "setStringValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setStringValue(cellAddress, value)",
+    "setStringValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    },
+    {
+     "name": "value",
+     "type": "String",
+     "doc": "Value to write."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets a string value to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row."
+  },
+  {
+   "name": "setValue",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "setValue(cellAddress, value)",
+    "setValue(columnNumber, rowNumber, value)"
+   ],
+   "parameters": [
+    {
+     "name": "cellAddress",
+     "type": "String",
+     "doc": "Address of the cell."
+    },
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the row (starting at 0)."
+    },
+    {
+     "name": "value",
+     "type": "",
+     "doc": "Value to write. Only strings, integers, doubles, booleans and nil are accepted."
+    }
+   ],
+   "returns": "",
+   "documentation": "Sets a value to the cell using Excel-style cell addressing (e.g. “A1”, “B2”) or at the specified column and row."
+  },
+  {
+   "name": "writeRangeValues",
+   "container": "XlsxSheet",
+   "kind": "method",
+   "signatures": [
+    "writeRangeValues(columnNumber, rowNumber, nbCols, nbRows, values)",
+    "writeRangeValues(topLeftAddress, bottomRightAddress, values)",
+    "writeRangeValues(rangeAddress, values)"
+   ],
+   "parameters": [
+    {
+     "name": "columnNumber",
+     "type": "int",
+     "doc": "Index of the starting column (starting at 0)."
+    },
+    {
+     "name": "rowNumber",
+     "type": "int",
+     "doc": "Index of the starting row (starting at 0)."
+    },
+    {
+     "name": "nbCols",
+     "type": "int",
+     "doc": "Number of columns to read."
+    },
+    {
+     "name": "nbRows",
+     "type": "int",
+     "doc": "Number of rows to read."
+    },
+    {
+     "name": "topLeftAddress",
+     "type": "String",
+     "doc": "Address of the first top-left cell."
+    },
+    {
+     "name": "bottomRightAddress",
+     "type": "String",
+     "doc": "Address of the last bottom-right cell"
+    },
+    {
+     "name": "rangeAddress",
+     "type": "String",
+     "doc": "Range to read in Excel notation (e.g. A2:C18)"
+    },
+    {
+     "name": "values",
+     "type": "Map",
+     "doc": "Values to write in the sheet"
+    }
+   ],
+   "returns": "",
+   "documentation": "Writes a set of rows and columns. This method is the preferred way to write a large volume of data to an Excel workbook. It’s much faster than calling individual methods such as setValue().\n\nThe range can be specified in 3 different ways:\n\nEither by providing the coordinates of the first cell (0-based) followed by the number of columns and rows.\n\nBy providing the coordinates of the top-left cell and the bottom-right cell in Excel notation.\n\nOr by providing a range in Excel notation, i.e. 2 coordinates separated by a colon, e.g. “A2:C18”.\n\nTo write the cells in the Excel workbook, this method performs a double loop on the map contained in the values variable, starting with the rows as the first index and then the columns. The indices all start at 0. In this way, the first value is read from values[0][0] and is written to the first cell of the range address (i.e. the top left cell). If the map contains no elements for certain indices, an empty cell is written. If a value previously existed in the Excel cell, it is deleted.\n\nIf non-integer keys or keys outside the expected range exist in the map, they are simply ignored. In addition, only bool, int, double, nil, strings and DateTimes are supported as values. Any other type of value read from the map will throw an exception."
+  },
+  {
+   "name": "ISO_8859_1",
+   "container": "charset",
+   "kind": "constant",
+   "signatures": [
+    "charset.ISO_8859_1"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Latin-1 encoding. This encoding is the most widely used for western europe. This is also the default encoding of Hexaly Modeler."
+  },
+  {
+   "name": "UTF_8",
+   "container": "charset",
+   "kind": "constant",
+   "signatures": [
+    "charset.UTF_8"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "UTF-8 encoding. This encoding should be the default one for your new projects with Hexaly Modeler. The parser of Hexaly Modeler will use it automatically if a Byte-Order-Mark (BOM) is detected at the begining of your files. This is also the default encoding of Hexaly Studio."
+  },
+  {
+   "name": "default",
+   "container": "charset",
+   "kind": "function",
+   "signatures": [
+    "charset.default()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the default encoding. The current version of Hexaly Modeler returns charset.ISO_8859_1 while Hexaly Studio returns charset.UTF_8."
+  },
+  {
+   "name": "lookup",
+   "container": "charset",
+   "kind": "function",
+   "signatures": [
+    "charset.lookup(name)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the encoding corresponding to the given name. If no encoding exists with the given name, an exception is thrown. You can use the name of the encoding or one of its aliases. The lookup is not case sensitive."
+  },
+  {
+   "name": "CsvContent",
+   "container": "csv",
+   "kind": "class",
+   "signatures": [
+    "class CsvContent"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "CsvReader",
+   "container": "csv",
+   "kind": "class",
+   "signatures": [
+    "class CsvReader"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "deserialize",
+   "container": "csv",
+   "kind": "function",
+   "signatures": [
+    "csv.deserialize(content)",
+    "csv.deserialize(content, options)"
+   ],
+   "parameters": [
+    {
+     "name": "content",
+     "type": "String",
+     "doc": "CSV content to parse."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "CsvContent",
+   "documentation": "Identical to parse() but the CSV content is taken from a string instead of a file."
+  },
+  {
+   "name": "parse",
+   "container": "csv",
+   "kind": "function",
+   "signatures": [
+    "csv.parse(reader)",
+    "csv.parse(reader, options)",
+    "csv.parse(filename)",
+    "csv.parse(filename, options)",
+    "csv.parse(filename, charset)",
+    "csv.parse(filename, charset, options)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the CSV file to convert."
+    },
+    {
+     "name": "stream",
+     "type": "StreamReader",
+     "doc": "Stream previously opened with io.openRead()."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "CsvContent",
+   "documentation": "Reads the CSV file and returns a CsvContent. You can provide the filename to parse or you can directly provide the stream to read, previously opened with io.openRead(). When using a filename, you can also specify the encoding. If no encoding is provided, ISO-8859-1 is assumed.\n\nSeveral options can be used to customize the behavior of the parser. These options must be specified in a map. The supported options are detailed at the end of this page."
+  },
+  {
+   "name": "read",
+   "container": "csv",
+   "kind": "function",
+   "signatures": [
+    "csv.read(reader)",
+    "csv.read(reader, options)",
+    "csv.read(filename)",
+    "csv.read(filename, options)",
+    "csv.read(filename, charset)",
+    "csv.read(filename, charset, options)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the CSV file to convert."
+    },
+    {
+     "name": "stream",
+     "type": "StreamReader",
+     "doc": "Stream previously opened with io.openRead()."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "CsvReader",
+   "documentation": "Opens the CSV file and returns a CsvReader useful to read the file line by line.\n\nSimilarly to the parser method, you can provide the filename to parse or you can directly provide the stream to read, previously opened with io.openRead(). When using a filename, you can also specify the encoding. If no encoding is provided, ISO-8859-1 is assumed.\n\nSeveral options can be used to customize the behavior of the parser. These options must be specified in a map. The supported options are detailed at the end of this page."
+  },
+  {
+   "name": "readString",
+   "container": "csv",
+   "kind": "function",
+   "signatures": [
+    "csv.readString(content)",
+    "csv.readString(content, options)"
+   ],
+   "parameters": [
+    {
+     "name": "content",
+     "type": "String",
+     "doc": "CSV content to parse."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "CsvReader",
+   "documentation": "Identical to read() but the CSV content is taken from a string instead of a file."
+  },
+  {
+   "name": "DateTime",
+   "container": "datetime",
+   "kind": "class",
+   "signatures": [
+    "class DateTime"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "TimeSpan",
+   "container": "datetime",
+   "kind": "class",
+   "signatures": [
+    "class TimeSpan"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "date",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.date(year, month, day, hour, minute, second)"
+   ],
+   "parameters": [],
+   "returns": "DateTime",
+   "documentation": "Returns a new DateTime object that is set to the given year, month (1-12), day (1-31), hour (0-23), minute (0-59) and second (0-59)."
+  },
+  {
+   "name": "isLeapYear",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.isLeapYear(year)"
+   ],
+   "parameters": [],
+   "returns": "bool",
+   "documentation": "Returns true if the year, given as an integer, is a leap year."
+  },
+  {
+   "name": "now",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.now()"
+   ],
+   "parameters": [],
+   "returns": "DateTime",
+   "documentation": "Returns a new DateTime object that is set to the current date and time on this computer expressed as local time."
+  },
+  {
+   "name": "span",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.span(nbDays, nbHours, nbMinutes, nbSeconds, nbMilliseconds)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "today",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.today()"
+   ],
+   "parameters": [],
+   "returns": "DateTime",
+   "documentation": "Returns a new DateTime that is set to today’s date, with the time component set to 00:00:00.0."
+  },
+  {
+   "name": "utcNow",
+   "container": "datetime",
+   "kind": "function",
+   "signatures": [
+    "datetime.utcNow()"
+   ],
+   "parameters": [],
+   "returns": "DateTime",
+   "documentation": "Returns a new DateTime object that is set to the current date and time on this computer, expressed as the Coordinated Universal Time (UTC)."
+  },
+  {
+   "name": "computeMatrix",
+   "container": "geodata",
+   "kind": "function",
+   "signatures": [
+    "geodata.computeMatrix(sources)",
+    "geodata.computeMatrix(sources, destinations)",
+    "geodata.computeMatrix(sources, destinations, options)"
+   ],
+   "parameters": [
+    {
+     "name": "sources",
+     "type": "map",
+     "doc": "Points to use as origin points"
+    },
+    {
+     "name": "destinations",
+     "type": "map",
+     "doc": "Points to use as destinations. Optional. If this option is missing, sources are used as destinations."
+    },
+    {
+     "name": "options",
+     "type": "map",
+     "doc": "Optional parameters to customize the behavior of the calculation engine."
+    }
+   ],
+   "returns": "map",
+   "documentation": "Computes a distance/duration matrix for a given list of geographical points.\n\nThe first argument sources represents the origin points of the computed matrix. The second argument destinations is optionnal. If it is missing, a square matrix is computed with the sources as destinations. If it is present, it is used as the destination points in the matrix. A point is the combination of a latitude and a longitude expressed in degrees. The different ways to model a point are detailed in a table below.\n\nThe third argument options can be used to customize the behavior of the calculations. The supported options are detailed in a dedicated section.\n\nThe returned value is a map with at most 2 fields. If durations are asked in the options, then a field durations is present. In this field, there is a map of map with the first index being the index of the source and the second index being the index of the destination. The duration values are given in seconds. If distances are asked in the input options, then a field distances is present. It is also a map of map with the same indexing pattern as the durations field. The distance values are given in meters.\n\nThe size of the matrix computed can be up to 10000x10000. To compute a 1000x1000 matrix, the server should respond in a few seconds. Computing a 5000x5000 matrix will take less than 1 minute."
+  },
+  {
+   "name": "computeRoutes",
+   "container": "geodata",
+   "kind": "function",
+   "signatures": [
+    "geodata.computeRoutes(routes)",
+    "geodata.computeRoutes(routes, options)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Computes the fastest routes between pairs of coordinates. This function is useful if you want to draw the routes on a map or create applications that need to know which sections are crossed one by one.\n\nThe first argument contains a list of routes in the form of a map indexed from 0 to n-1 (where n is the number of routes). A route itself is also a map containing two fields, ‘source’ and ‘destination’, representing points (latitude, longitude). The different ways to model a point are detailed in a table below.\n\nThe second argument options can be used to customize the behavior of the calculations. The supported options are detailed in a dedicated section.\n\nThe returned value is a map containing as many values as requested routes indexed from 0 to n-1. Each route includes the requested attributes (duration and/or distance) as well as the geometry of the route. The geometry can be returned as a GeoJSON object (type LineString) or a polyline. GeoJSON is an open standard created to represent geographical shapes like points, lines or polygons. The latest version of the format is available on the IETF website. Polylines represent a sequence of compressed coordinates, encoded in base64 and returned as strings. The format was originally developed by Google. The specifications are available on the Google Maps Platform website."
+  },
+  {
+   "name": "HexalyOptimizer",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HexalyOptimizer"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Hexaly Optimizer environment. Main type of Hexaly Optimizer library.\n\ncreatePhase\n\nCreates and adds a new phase to this Hexaly Optimizer environment.\n\nsolve\n\nSolves the model.\n\nstop\n\nAborts the resolution previously launched using solve().\n\ncomputeInconsistency\n\nCompute an inconsistency core for this model.\n\nloadEnvironment\n\nImport a complete environment from a file.\n\nsaveEnvironment\n\nExport a complete environment or a model to a file.\n\naddCallback\n\nAdd a new callback for a specific event type.\n\nremoveCallback\n\nRemove the callback for the given event type and previously added with addCallback().\n\nenter\n\nThese operators are automatically called when a solver instance is used in a with statement."
+  },
+  {
+   "name": "HxArray",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxArray"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Value type for array expressions. An array can contain numbers (int, double), other HxArray (for multi-dimensional arrays), HxInterval or HxCollection (list, set). Arrays are not decisions and cannot be modified. Such a value is obtained with HxExpression.value or with HxSolution.getValue()."
+  },
+  {
+   "name": "HxCollection",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxCollection"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Value type for collection expressions (lists or sets). Such a value is obtained with HxExpression.value or with HxSolution.getValue()."
+  },
+  {
+   "name": "HxExpression",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxExpression"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Mathematical modeling expression. Expressions are used to build the mathematical optimization model associated to Hexaly Optimizer. An expression is composed of an operator (which corresponds to its type) and its operands (which are other expressions of the model)."
+  },
+  {
+   "name": "HxExternalArgumentValues",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxExternalArgumentValues"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Argument values for external functions. Argument values are used to query the values of the arguments passed to external functions."
+  },
+  {
+   "name": "HxInconsistency",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxInconsistency"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Inconsistency core of the optimization model. Also known as Irreductible Inconsistent Subproblem. Such a value is obtained with HexalyOptimizer.computeInconsistency()."
+  },
+  {
+   "name": "HxInterval",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxInterval"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Value type for interval expressions. Such a value is obtained with HxExpression.value or with HxSolution.getValue()."
+  },
+  {
+   "name": "HxModel",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxModel"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Mathematical optimization model. A model is composed of expressions (some of which are decisions), organized as a tree. Then, some expressions of the model can be constrained or optimized. Once your optimization model is created and closed, the solver can be launched to resolve it. Note that you cannot modify a model which has been closed: you must reopen it (with open()) or instantiate another Hexaly Optimizer environment to optimize another model."
+  },
+  {
+   "name": "HxParam",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxParam"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Solving parameters. This type contains some methods allowing you to parameterize the resolution of the model. For the sake of simplicity, only a few parameters are actually offered to tune the search."
+  },
+  {
+   "name": "HxPhase",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxPhase"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Optimization phase. Since Hexaly Optimizer allows lexicographic multiobjective optimization, we allow you to parameterize the time or the number of iterations to spend in optimizing each objective. When multiple objectives are declared, these objectives are optimized in lexicographic order (in the order of their declaration in the model). Thus, if k objectives 0, ..., k-1 are declared, each objective i can be optimized while maintaining the values of objectives 0, ..., i-1 previously obtained and ignoring the values of objectives i+1, ..., k-1. During such an optimization phase, objective i is called the optimized objective."
+  },
+  {
+   "name": "HxSolution",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxSolution"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Solution to the optimization model. A solution carries the values of all expressions in the model. It is used to retrieve the values of all expressions (getting the solution), or to set the values of some decisions (setting the solution).\n\ngetValue\n\nReturns the value of the given expression in this solution.\n\nsetValue\n\nSets the value of the given expression in this solution.\n\nclear\n\nClear the solution and set all decisions to zero."
+  },
+  {
+   "name": "HxStatistics",
+   "container": "hexaly",
+   "kind": "class",
+   "signatures": [
+    "class HxStatistics"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Statistics of the search."
+  },
+  {
+   "name": "create",
+   "container": "hexaly",
+   "kind": "function",
+   "signatures": [
+    "hexaly.create()"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Creates a new optimizer. To be useful, the returned optimizer must be used within a with statement to be considered the active optimizer. Otherwise, you will not be able to use the mathematical modeling functions (such as sum, min, max, bool, list) nor the keywords minimize, maximize, constraint:"
+  },
+  {
+   "name": "HttpResponse",
+   "container": "http",
+   "kind": "class",
+   "signatures": [
+    "class HttpResponse"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "send",
+   "container": "http",
+   "kind": "function",
+   "signatures": [
+    "http.send(options)"
+   ],
+   "parameters": [
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Options and content of the http request."
+    }
+   ],
+   "returns": "HttpResponse",
+   "documentation": "Send an HTTP request. The request configuration is done through the options parameter. All request parameters (including cookies and headers) must be supplied in the form of maps, whose expected keys and values are detailed below."
+  },
+  {
+   "name": "StreamReader",
+   "container": "io",
+   "kind": "class",
+   "signatures": [
+    "class StreamReader"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Default type for input streams."
+  },
+  {
+   "name": "StreamWriter",
+   "container": "io",
+   "kind": "class",
+   "signatures": [
+    "class StreamWriter"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Default type for output streams."
+  },
+  {
+   "name": "openAppend",
+   "container": "io",
+   "kind": "function",
+   "signatures": [
+    "io.openAppend(filename)",
+    "io.openAppend(filename, charset)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the file to open."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    }
+   ],
+   "returns": "StreamWriter",
+   "documentation": "Opens file filename in appending mode. This function returns a StreamWriter or throws an exception if the file cannot be opened. If the charset is omitted, this function will use the default charset returned by charset.default()."
+  },
+  {
+   "name": "openRead",
+   "container": "io",
+   "kind": "function",
+   "signatures": [
+    "io.openRead(filename)",
+    "io.openRead(filename, charset)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the file to open."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    }
+   ],
+   "returns": "StreamReader",
+   "documentation": "Opens file filename in reading mode. This function returns a StreamReader or throws an exception if the file cannot be opened. If the charset is omitted, this function will use the default charset returned by charset.default()."
+  },
+  {
+   "name": "openWrite",
+   "container": "io",
+   "kind": "function",
+   "signatures": [
+    "io.openWrite(filename)",
+    "io.openWrite(filename, charset)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the file to open."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    }
+   ],
+   "returns": "StreamWriter",
+   "documentation": "Opens file filename in writing mode. If the file already exists, it is truncated first. This function returns a StreamWriter or throws an exception if the file cannot be opened. If the charset is omitted, this function will use the default charset returned by charset.default()."
+  },
+  {
+   "name": "stderr",
+   "container": "io",
+   "kind": "constant",
+   "signatures": [
+    "io.stderr"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Standard error stream. This attribute is readonly."
+  },
+  {
+   "name": "stdin",
+   "container": "io",
+   "kind": "constant",
+   "signatures": [
+    "io.stdin"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Standard input stream. This attribute is readonly."
+  },
+  {
+   "name": "stdout",
+   "container": "io",
+   "kind": "constant",
+   "signatures": [
+    "io.stdout"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Standard output stream. This attribute is readonly."
+  },
+  {
+   "name": "deserialize",
+   "container": "json",
+   "kind": "function",
+   "signatures": [
+    "json.deserialize(content)",
+    "json.deserialize(content, options)"
+   ],
+   "parameters": [
+    {
+     "name": "content",
+     "type": "String",
+     "doc": "JSON content to parse."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "Map, String, integer, double or nil",
+   "documentation": "Identical to parse() but the JSON content is taken from a string instead of a file."
+  },
+  {
+   "name": "dump",
+   "container": "json",
+   "kind": "function",
+   "signatures": [
+    "json.dump(value, writer)",
+    "json.dump(value, writer, options)",
+    "json.dump(value, filename)",
+    "json.dump(value, filename, options)",
+    "json.dump(value, filename, charset)",
+    "json.dump(value, filename, charset, options)"
+   ],
+   "parameters": [
+    {
+     "name": "value",
+     "type": "",
+     "doc": "Value to encode. Only boolean, integers, doubles, strings, maps and nil are accepted."
+    },
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the destination file."
+    },
+    {
+     "name": "stream",
+     "type": "StreamWriter",
+     "doc": "Stream previously opened with io.openWrite() or io.openAppend()."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert characters to bytes."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the writer."
+    }
+   ],
+   "returns": "",
+   "documentation": "Writes the JSON representation of a value in a file. The file can be provided as a filename or as a stream writer previously opened with io.openWrite() or io.openAppend(). When using a filename, you can also specify the encoding. If no encoding is provided, UTF-8 is assumed.\n\nSeveral options can be used to customize the behavior of the writer. These options must be specified in a map. The supported options are detailed at the end of this page."
+  },
+  {
+   "name": "parse",
+   "container": "json",
+   "kind": "function",
+   "signatures": [
+    "json.parse(reader)",
+    "json.parse(reader, options)",
+    "json.parse(filename)",
+    "json.parse(filename, options)",
+    "json.parse(filename, charset)",
+    "json.parse(filename, charset, options)"
+   ],
+   "parameters": [
+    {
+     "name": "filename",
+     "type": "String",
+     "doc": "Path to the JSON file to convert."
+    },
+    {
+     "name": "stream",
+     "type": "StreamReader",
+     "doc": "Stream previously opened with io.openRead()."
+    },
+    {
+     "name": "charset",
+     "type": "Charset",
+     "doc": "Encoding used to convert bytes to characters."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "Map, String, integer, double or nil",
+   "documentation": "Converts the given file to a Hexaly Modeler value. You can provide the filename to parse or you can directly provide the stream to read, previously opened with io.openRead(). When using a filename, you can also specify the encoding. If no encoding is provided, UTF-8 is assumed.\n\nSeveral options can be used to customize the behavior of the parser. These options must be specified in a map. The supported options are detailed at the end of this page."
+  },
+  {
+   "name": "serialize",
+   "container": "json",
+   "kind": "function",
+   "signatures": [
+    "json.serialize(content)",
+    "json.serialize(content, options)"
+   ],
+   "parameters": [
+    {
+     "name": "content",
+     "type": "String",
+     "doc": "JSON content to parse."
+    },
+    {
+     "name": "options",
+     "type": "Map",
+     "doc": "Optional parameters to customize the behavior of the parser."
+    }
+   ],
+   "returns": "Map, String, integer, double or nil",
+   "documentation": "Identical to dump() but the converted value is returned as a string."
+  },
+  {
+   "name": "Map",
+   "container": "map",
+   "kind": "class",
+   "signatures": [
+    "class Map"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "This is the base type for maps."
+  },
+  {
+   "name": "E",
+   "container": "math",
+   "kind": "constant",
+   "signatures": [
+    "math.E"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "The mathematical constant e = 2.718281828459045"
+  },
+  {
+   "name": "PI",
+   "container": "math",
+   "kind": "constant",
+   "signatures": [
+    "math.PI"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "The mathematical constant π = 3.141592653589793."
+  },
+  {
+   "name": "abs",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.abs(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the absolute value of the argument."
+  },
+  {
+   "name": "acos",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.acos(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the arc cosine of the given value. The result is in the range 0.0 through π. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is greater than 1.0 or less than 1.0, then the result is nan."
+  },
+  {
+   "name": "acosh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.acosh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the inverse hyperbolic cosine of the given value. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is less than 1.0, then the result is nan."
+  },
+  {
+   "name": "asin",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.asin(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the arc sine of the given value. The result is in the range 0.0 through π. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is greater than 1.0 or less than 1.0, then the result is nan."
+  },
+  {
+   "name": "asinh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.asinh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the inverse hyperbolic sine of the given value. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero."
+  },
+  {
+   "name": "atan",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.atan(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the arc tangent of the given value. The result is in the range -π/2 through π/2. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero."
+  },
+  {
+   "name": "atanh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.atanh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the inverse hyperbolic tangent of the given value. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero."
+  },
+  {
+   "name": "ceil",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.ceil(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the ceiling of x, i.e the smallest integer value greater than or equal to the given value. The result is casted to an integer. If the given value is already an integer, the argument is simply returned.\n\nIf the final result is out of the range of integers (e.g math.ceil(+inf)), an exception is thrown."
+  },
+  {
+   "name": "cos",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.cos(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the trigonometric cosine of an angle. If the argument is nan, +inf or -inf, then the result is nan."
+  },
+  {
+   "name": "cosh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.cosh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the hyperbolic cosine of the given value. This function is equivalent to (e^x + e^-x)/2. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is +inf, then the result is +inf.\n\nIf the argument is -inf, then the result is +inf.\n\nIf the argument is zero, then the result is 1.0."
+  },
+  {
+   "name": "exp",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.exp(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns Euler’s number e raised to the power of the given value. Special cases:\n\nIf the value is nan, the result is nan.\n\nIf the value is +inf, then the result is +inf.\n\nIf the value is -inf, then the result is positive zero.\n\nIf the final result overflow, then +inf is returned."
+  },
+  {
+   "name": "floor",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.floor(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the floor of x, i.e the largest integer value less than or equal to the given value. The result is casted to an integer. If the given value is already an integer, the argument is simply returned.\n\nIf the final result is out of the range of integers (e.g math.floor(+inf)), an exception is thrown."
+  },
+  {
+   "name": "isInf",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.isInf(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the given value is positive or negative infinity (+inf or -inf). Please note that the given value must be a float or an integer. This function will throw an exception otherwise."
+  },
+  {
+   "name": "isNan",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.isNan(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns true if the given value is a nan (Not a Number). Please note that the given value must be a float or an integer. This function will throw an exception otherwise."
+  },
+  {
+   "name": "log",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.log(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the logarithm (base e) of the given value. Special cases:\n\nIf the value is nan or less than zero, then the result is nan.\n\nIf the value is +inf, then the result is +inf.\n\nIf the value is zero (positive or negative), then the result is -inf."
+  },
+  {
+   "name": "log10",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.log10(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the logarithm (base 10) of the given value. Special cases:\n\nIf the value is nan or less than zero, then the result is nan.\n\nIf the value is +inf, then the result is +inf.\n\nIf the value is zero (positive or negative), then the result is -inf."
+  },
+  {
+   "name": "log2",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.log2(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the logarithm (base 2) of the given value. Special cases:\n\nIf the value is nan or less than zero, then the result is nan.\n\nIf the value is +inf, then the result is +inf.\n\nIf the value is zero (positive or negative), then the result is -inf."
+  },
+  {
+   "name": "pow",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.pow(base, exponent)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "round",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.round(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the closest integer to the given value. The result is casted to an integer. If the given value is already an integer, the argument is simply returned.\n\nIf the final result is out of the range of integers (e.g math.round(+inf)), an exception is thrown."
+  },
+  {
+   "name": "sin",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.sin(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the trigonometric sine of an angle. Special cases:\n\nIf the argument is nan, +inf or -inf, then the result is nan.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero."
+  },
+  {
+   "name": "sinh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.sinh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the hyperbolic sine of the given value. This function is equivalent to (e^x - e^-x)/2. Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is +inf, then the result is +inf.\n\nIf the argument is -inf, then the result is -inf.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero."
+  },
+  {
+   "name": "sqrt",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.sqrt(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the square root of a the given value. Special cases:\n\nIf the value is nan or less than zero, the result is nan.\n\nIf the value is +inf, the result is +inf."
+  },
+  {
+   "name": "tan",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.tan(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the trigonometric tangent of an angle. If the argument is nan, +inf or -inf, then the result is nan."
+  },
+  {
+   "name": "tanh",
+   "container": "math",
+   "kind": "function",
+   "signatures": [
+    "math.tanh(val)"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Returns the hyperbolic tangent of the given value. This function is equivalent to sinh(x)/cosh(x). Special cases:\n\nIf the argument is nan, then the result is nan.\n\nIf the argument is positive zero, then the result is positive zero.\n\nIf the argument is negative zero, then the result is negative zero.\n\nIf the argument is +inf, then the result is +1.0.\n\nIf the argument is -inf, then the result is -1.0."
+  },
+  {
+   "name": "Random",
+   "container": "random",
+   "kind": "class",
+   "signatures": [
+    "class Random"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": ""
+  },
+  {
+   "name": "create",
+   "container": "random",
+   "kind": "function",
+   "signatures": [
+    "random.create()",
+    "random.create(seed)"
+   ],
+   "parameters": [
+    {
+     "name": "int",
+     "type": "seed",
+     "doc": "Seed to initialize the pseudorandom generator."
+    }
+   ],
+   "returns": "Random",
+   "documentation": "Creates a new random generator with the given seed. The seed is optional. If seed is omitted, the current system time is used to initialize the generator."
+  },
+  {
+   "name": "String",
+   "container": "string",
+   "kind": "class",
+   "signatures": [
+    "class String"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "This is the base type for strings. String objects are compliant with Unicode 10.0 and can contain any unicode character."
+  },
+  {
+   "name": "XlsxDocument",
+   "container": "xlsx",
+   "kind": "class",
+   "signatures": [
+    "class XlsxDocument"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Represents an Excel workbook."
+  },
+  {
+   "name": "XlsxSheet",
+   "container": "xlsx",
+   "kind": "class",
+   "signatures": [
+    "class XlsxSheet"
+   ],
+   "parameters": [],
+   "returns": "",
+   "documentation": "Represents a single worksheet from an Excel workbook.\n\nCells can be identified either by their Excel address (such as “A1” or “B2”), or by their column and row number (0-based). The valid range for cell positions in an Excel sheet is:\n\nColumns: [0, 16383] (0-based, corresponding to columns A to XFD)\n\nRows: [0, 1048575] (0-based, corresponding to rows 1 to 1048576)\n\nAn exception is thrown if you try to access cells outside these ranges."
+  },
+  {
+   "name": "create",
+   "container": "xlsx",
+   "kind": "function",
+   "signatures": [
+    "xlsx.create(fileName)"
+   ],
+   "parameters": [
+    {
+     "name": "fileName",
+     "type": "String",
+     "doc": "Path to the XLSX file."
+    }
+   ],
+   "returns": "XlsxDocument",
+   "documentation": "Create a new XLSX file and return an XlsxDocument, which provides access to all sheets and their contents. This will overwrite any existing file at the specified fileName path. The file is created even if the user does not save it (e.g. with XlsxDocument.save()). An exception is thrown if fileName is incorrect."
+  },
+  {
+   "name": "open",
+   "container": "xlsx",
+   "kind": "function",
+   "signatures": [
+    "xlsx.open(fileName)"
+   ],
+   "parameters": [
+    {
+     "name": "fileName",
+     "type": "String",
+     "doc": "Path to the XLSX file."
+    }
+   ],
+   "returns": "XlsxDocument",
+   "documentation": "Open an XLSX file and return an XlsxDocument, which provides access to all sheets and their contents. An exception is thrown if the file does not exist, is not accessible or it is not a valid XLSX file."
+  }
+ ]
+}
