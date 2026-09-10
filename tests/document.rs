@@ -22,9 +22,7 @@ fn position(line: u32, character: u32) -> Position {
 fn reports_one_diagnostic_per_syntax_error() {
     // Two independent mistakes, deliberately far apart. The Hexaly compiler reports only the
     // first; recovering and reporting both is the whole reason this layer exists.
-    let (_parser, document) = open(
-        "function model() {\n    a <- bool(;\n    b <- bool();\n    c <- bool(;\n}\n",
-    );
+    let (_parser, document) = open("function model() {\n    a <- bool(;\n    b <- bool();\n    c <- bool(;\n}\n");
 
     let diagnostics = syntax::diagnostics(&document);
 
@@ -40,9 +38,8 @@ fn reports_one_diagnostic_per_syntax_error() {
 
 #[test]
 fn clean_file_has_no_diagnostics() {
-    let (_parser, document) = open(
-        "function model() {\n    x[i in 0...5] <- bool();\n    constraint sum[i in 0...5](x[i]) <= 3;\n}\n",
-    );
+    let (_parser, document) =
+        open("function model() {\n    x[i in 0...5] <- bool();\n    constraint sum[i in 0...5](x[i]) <= 3;\n}\n");
 
     assert_eq!(syntax::diagnostics(&document), Vec::new());
 }

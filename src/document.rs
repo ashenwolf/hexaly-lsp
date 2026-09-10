@@ -130,11 +130,7 @@ impl Document {
     /// Getting this wrong is invisible on ASCII and misplaces every squiggle after the first
     /// non-ASCII character on a line, which is why it is tested directly.
     pub fn position(&self, point: tree_sitter::Point) -> Position {
-        let line = self
-            .text
-            .split_inclusive('\n')
-            .nth(point.row)
-            .unwrap_or_default();
+        let line = self.text.split_inclusive('\n').nth(point.row).unwrap_or_default();
 
         // `point.column` is a byte offset within the line; clamp it because a point at
         // end-of-file can name the position just past the last line's content.

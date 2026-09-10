@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # Phase 1 needs no Hexaly installation, which is the point: the syntax layer must keep
+      # working on a machine that has none, and CI is the strictest version of that machine.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo fmt --check
+
+      - run: cargo clippy --all-targets -- -D warnings
+
+      # Includes the stdio test, which spawns the built binary and reads framed JSON-RPC back,
+      # so a regression that only shows up in the real protocol still fails here.
+      - run: cargo test --all-targets

@@ -89,7 +89,10 @@ fn serves_diagnostics_over_stdio() {
     );
 
     let initialize = server.receive_containing("\"id\":1");
-    assert!(initialize.contains("\"positionEncoding\":\"utf-16\""), "got {initialize}");
+    assert!(
+        initialize.contains("\"positionEncoding\":\"utf-16\""),
+        "got {initialize}"
+    );
     // Incremental sync is `2` in the wire enum. Asserting the number rather than the Rust constant
     // checks what the client actually receives.
     assert!(initialize.contains("\"textDocumentSync\":2"), "got {initialize}");
@@ -113,8 +116,14 @@ fn serves_diagnostics_over_stdio() {
     );
 
     let cleared = server.receive_containing("publishDiagnostics");
-    assert!(cleared.contains("\"diagnostics\":[]"), "expected empty set, got {cleared}");
-    assert!(cleared.contains("\"version\":2"), "version accompanies the retraction: {cleared}");
+    assert!(
+        cleared.contains("\"diagnostics\":[]"),
+        "expected empty set, got {cleared}"
+    );
+    assert!(
+        cleared.contains("\"version\":2"),
+        "version accompanies the retraction: {cleared}"
+    );
 
     server.send(r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":null}"#);
     let shutdown = server.receive_containing("\"id\":2");
