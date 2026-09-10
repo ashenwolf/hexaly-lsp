@@ -149,6 +149,42 @@ impl Document {
             end: self.position(node.end_position()),
         }
     }
+
+    /// The whole of `line`, as a range. The fallback for a compiler diagnostic: Hexaly reports no
+    /// column, and a zero-width range at column 0 renders as an invisible squiggle.
+    pub fn line_range(&self, line: u32) -> Range {
+        let text = self.text.lines().nth(line as usize).unwrap_or_default();
+        let end = text.chars().map(char::len_utf16).sum::<usize>();
+
+        Range {
+            start: Position { line, character: 0 },
+            end: Position {
+                line,
+                character: end as u32,
+            },
+        }
+    }
+
+    /// Range of the `module_path` in the `use` statement naming `module`, if the file has one.
+    ///
+    /// This is what upgrades an unresolvable-module error from a whole line to the offending name:
+    /// the compiler says only "cannot load module 'x'" with the line of the `use`, and the tree
+    /// knows where within that line the name sits.
+    pub fn module_path_range(&self, module: &str) -> Option<Range> {
+        let mut cursor = self.tree.walk();
+        let root = self.tree.root_node();
+
+        root.children(&mut cursor)
+            .filter(|node| node.kind() == "use_statement")
+            .collect::<Vec<_>>()
+            .into_iter()
+            .find_map(|statement| {
+                let path = statement.child_by_field_name("module")?;
+                // Compared against the source text rather than a reconstructed name so a dotted
+                // path (`use utils.fn;`) matches exactly as Hexaly spelled it in the message.
+                (path.utf8_text(self.text.as_bytes()).ok()? == module).then(|| self.range(path))
+            })
+    }
 }
 
 /// `Parser::parse` is fallible only when a timeout or cancellation flag is set, and this server

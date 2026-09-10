@@ -129,3 +129,39 @@ fn serves_diagnostics_over_stdio() {
     let shutdown = server.receive_containing("\"id\":2");
     assert!(shutdown.contains("\"result\":null"), "got {shutdown}");
 }
+
+#[test]
+fn reports_the_hexaly_installation_it_found() {
+    let mut server = Server::start();
+
+    server.send(
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{},"processId":null,"rootUri":null}}"#,
+    );
+    server.receive_containing("\"id\":1");
+    server.send(r#"{"jsonrpc":"2.0","method":"initialized","params":{}}"#);
+
+    // Either outcome is correct depending on the machine; what matters is that the server says
+    // which, because "why do I have no compiler diagnostics" is otherwise unanswerable from the
+    // client side.
+    let logged = server.receive_containing("Hexaly");
+    assert!(
+        logged.contains("Hexaly found") || logged.contains("Hexaly not found") || logged.contains("Hexaly configured"),
+        "got {logged}"
+    );
+}
+
+#[test]
+fn honours_a_configured_hexaly_path() {
+    let mut server = Server::start();
+
+    // A path that does not exist, to prove the setting is read rather than silently discarded in
+    // favour of whatever discovery would have found.
+    server.send(
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{},"processId":null,"rootUri":null,"initializationOptions":{"hexalyPath":"/configured/by/the/user/hexaly"}}}"#,
+    );
+    server.receive_containing("\"id\":1");
+    server.send(r#"{"jsonrpc":"2.0","method":"initialized","params":{}}"#);
+
+    let logged = server.receive_containing("Hexaly");
+    assert!(logged.contains("/configured/by/the/user/hexaly"), "got {logged}");
+}

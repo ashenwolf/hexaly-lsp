@@ -11,7 +11,7 @@ edition = "2024"
 # The maintained community fork. The original `tower-lsp` has been unreleased since early 2023
 # and still runs notification handlers concurrently, which reorders didChange against didClose.
 tower-lsp-server = "0.23"
-tokio = { version = "1.48", features = ["macros", "rt-multi-thread", "io-std"] }
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread", "io-std", "fs", "process"] }
 tree-sitter = "0.25.10"
 tree-sitter-hexaly = { git = "https://github.com/ashenwolf/tree-sitter-hexaly", rev = "e5154a10c07b92f99a306b17c41f687206c3b31b" }
 

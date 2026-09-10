@@ -7,6 +7,7 @@
 //! can be tested directly, rather than only through a live stdio session.
 
 pub mod diagnostics;
+pub mod discovery;
 pub mod document;
 pub mod server;
 

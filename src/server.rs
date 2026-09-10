@@ -1,16 +1,18 @@
 //! LSP server: document lifecycle and diagnostic publication.
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use tokio::sync::Mutex;
 use tower_lsp_server::ls_types::{
-    DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, InitializeParams,
-    InitializeResult, InitializedParams, MessageType, PositionEncodingKind, ServerCapabilities, ServerInfo,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+    Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
+    DidSaveTextDocumentParams, InitializeParams, InitializeResult, InitializedParams, MessageType,
+    PositionEncodingKind, ServerCapabilities, ServerInfo, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
 };
 use tower_lsp_server::{Client, LanguageServer, jsonrpc};
 
-use crate::diagnostics::syntax;
+use crate::diagnostics::{hexaly, syntax};
+use crate::discovery::{self, Discovery};
 use crate::document::Document;
 
 /// The parser and the document map live under one lock, taken for the whole of each handler.
@@ -27,6 +29,9 @@ struct State {
 pub struct Backend {
     client: Client,
     state: Mutex<State>,
+    /// Resolved once at `initialize`. Re-resolving per request would let a mid-session PATH change
+    /// silently switch compilers, and the answer is not going to change on its own.
+    hexaly: Mutex<Discovery>,
 }
 
 impl Backend {
@@ -37,12 +42,13 @@ impl Backend {
                 parser: crate::parser(),
                 documents: HashMap::new(),
             }),
+            hexaly: Mutex::new(Discovery::Missing),
         }
     }
 
     /// Publishes with the document version so the client can discard results it has already
     /// superseded. Without it, a slow parse can overwrite the diagnostics of a newer edit.
-    async fn publish(&self, uri: Uri) {
+    async fn publish_syntax(&self, uri: Uri) {
         let (diagnostics, version) = {
             let state = self.state.lock().await;
             match state.documents.get(&uri) {
@@ -55,10 +61,72 @@ impl Backend {
 
         self.client.publish_diagnostics(uri, diagnostics, Some(version)).await;
     }
+
+    /// Runs the Hexaly frontend over the saved file and publishes what it says.
+    ///
+    /// Deliberately on save only. The invocation writes a wrapper file into the user's directory,
+    /// which is not something to do on every keystroke, and the compiler's one-error-per-run
+    /// ceiling makes it a poor fit for live feedback anyway. The syntax layer covers that.
+    async fn publish_compiler(&self, uri: Uri) {
+        let Some(hexaly) = self.hexaly.lock().await.path().map(PathBuf::from) else {
+            return;
+        };
+
+        // A URI that is not a local file (a remote or in-memory scheme) cannot be handed to a
+        // subprocess.
+        let Some(path) = uri.to_file_path() else {
+            return;
+        };
+
+        let error = hexaly::check(&hexaly, &path).await;
+
+        let diagnostics = {
+            let state = self.state.lock().await;
+            let Some(document) = state.documents.get(&uri) else {
+                return;
+            };
+
+            error.map(|error| vec![locate(document, error)]).unwrap_or_default()
+        };
+
+        // Published without a version: this reflects the file on disk, not the buffer, so tying it
+        // to a buffer version the client may have moved past would have it discarded.
+        self.client.publish_diagnostics(uri, diagnostics, None).await;
+    }
+}
+
+/// Turns a line-granular compiler error into the best range the tree can justify.
+///
+/// Hexaly gives no column, so the fallback is the whole line. But a module-resolution failure names
+/// the module, and the tree knows exactly where that `use` statement's path sits, so those get a
+/// real range over the offending name instead of a line-wide smear.
+fn locate(document: &Document, error: hexaly::CompilerError) -> Diagnostic {
+    let range = hexaly::failed_module(&error.message)
+        .and_then(|module| document.module_path_range(module))
+        .unwrap_or_else(|| document.line_range(error.line));
+
+    Diagnostic {
+        range,
+        severity: Some(DiagnosticSeverity::ERROR),
+        source: Some(hexaly::SOURCE.to_string()),
+        message: error.message,
+        ..Diagnostic::default()
+    }
 }
 
 impl LanguageServer for Backend {
-    async fn initialize(&self, _: InitializeParams) -> jsonrpc::Result<InitializeResult> {
+    async fn initialize(&self, params: InitializeParams) -> jsonrpc::Result<InitializeResult> {
+        // Discovery happens here rather than in an editor extension, so every client gets it from
+        // a bare `cmd` with no editor-specific glue.
+        let configured = params
+            .initialization_options
+            .as_ref()
+            .and_then(|options| options.get("hexalyPath"))
+            .and_then(|value| value.as_str())
+            .map(PathBuf::from);
+
+        *self.hexaly.lock().await = discovery::locate(configured);
+
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
                 // UTF-16 is the LSP default, stated rather than left implicit because every
@@ -80,9 +148,10 @@ impl LanguageServer for Backend {
     }
 
     async fn initialized(&self, _: InitializedParams) {
-        self.client
-            .log_message(MessageType::INFO, "hexaly-lsp ready (syntax diagnostics)")
-            .await;
+        // Reported because "why do I have no compiler diagnostics" is otherwise a question with no
+        // visible answer. Absence is normal, so it is informational rather than a warning.
+        let discovery = self.hexaly.lock().await.describe();
+        self.client.log_message(MessageType::INFO, discovery).await;
     }
 
     async fn shutdown(&self) -> jsonrpc::Result<()> {
@@ -100,7 +169,10 @@ impl LanguageServer for Backend {
             );
         }
 
-        self.publish(document.uri).await;
+        self.publish_syntax(document.uri.clone()).await;
+        // Diagnose what is on disk at open time too: a file can be saved and broken by another
+        // tool, and waiting for the user's first save would show it as clean.
+        self.publish_compiler(document.uri).await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -119,7 +191,11 @@ impl LanguageServer for Backend {
             }
         }
 
-        self.publish(uri).await;
+        self.publish_syntax(uri).await;
+    }
+
+    async fn did_save(&self, params: DidSaveTextDocumentParams) {
+        self.publish_compiler(params.text_document.uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {

@@ -3,28 +3,56 @@
 Language server for [Hexaly Modeler](https://www.hexaly.com) models (`.hxm`).
 
 Provides syntax diagnostics from the
-[tree-sitter-hexaly](https://github.com/ashenwolf/tree-sitter-hexaly) grammar. **No Hexaly
-installation or licence is required** for what it does today.
+[tree-sitter-hexaly](https://github.com/ashenwolf/tree-sitter-hexaly) grammar, plus
+compiler-backed diagnostics from a local Hexaly installation when one is present.
+
+**No Hexaly licence is required**, and the syntax layer needs no Hexaly installation at all.
 
 ## Status
 
-Phase 1: syntax diagnostics only. Every syntax error in the file is reported at once, with real
-character ranges, on every keystroke.
+Two diagnostic layers, deliberately complementary rather than one falling back to the other:
 
-Compiler-backed diagnostics (duplicate declarations, unresolvable `use`) and completion are
-planned. Neither is implemented yet.
+| | Syntax (tree-sitter) | Compiler (Hexaly) |
+|---|---|---|
+| When | every keystroke | on save |
+| Errors reported | all of them | one per run |
+| Precision | character ranges | line, no column |
+| Catches | syntax | duplicate declarations, unresolvable `use` |
+| Needs Hexaly | no | yes, but no licence |
+
+Completion, hover and navigation are planned. None is implemented yet.
+
+### Why no licence is needed
+
+Hexaly binds a module's declarations without a licence; the licence is consumed by *solving*. So
+the compiler layer runs a load-only invocation and never solves — which also means it never
+consumes one of a floating licence's concurrent seats, and works on a machine whose licence has
+expired.
+
+The CLI has no parse-only flag, so this is done by writing a small wrapper beside the file:
+
+```
+use <module>;
+function main() {}
+```
+
+`use` binds the target's declarations and the empty `main` then exits. Three properties of this
+were measured rather than assumed: the empty `main` is load-bearing (without it Hexaly falls
+through to solving), the target's own `model()` body never executes, and exit status distinguishes
+a rejected module from a clean one. The wrapper must be a real file in the target's own directory,
+because Hexaly resolves `use` against the directory of the script it is given — a temp directory or
+a pipe cannot see the target's siblings.
 
 ### What is reachable, and what is not
 
 Worth stating up front, because it bounds what this server can ever do. Hexaly's frontend binds
-declarations without type-checking function bodies, so `loadModule` accepts an undefined variable,
-a type mismatch, and a wrong-arity builtin call. Catching those means *running* the model, which
-needs a licence and executes model code — so **semantic errors inside function bodies are out of
-scope**, not merely unimplemented.
+declarations without type-checking function bodies, so it accepts an undefined variable, a type
+mismatch, and a wrong-arity builtin call. Catching those means *running* the model, which needs a
+licence and executes model code — so **semantic errors inside function bodies are out of scope**,
+not merely unimplemented.
 
-The compiler is also limited where it does help: it reports one error per parse, with a line and no
-column. That is why tree-sitter carries the interactive experience and the compiler layer is
-additive rather than primary.
+A file whose name is not a valid Hexaly identifier (`my-model.hxm`) cannot be loaded as a module,
+so it gets syntax diagnostics only.
 
 ## Install
 
@@ -91,6 +119,25 @@ extension should contribute only the LSP.
   (add-to-list 'eglot-server-programs '(hexaly-mode . ("hexaly-lsp"))))
 ```
 
+## Configuration
+
+Hexaly is discovered automatically: `PATH`, then the versioned install directories
+(`/opt/hexaly_*`, newest first). To point at a specific installation, pass `hexalyPath` in the
+client's `initializationOptions`:
+
+```lua
+-- Neovim
+vim.lsp.config["hexaly"] = {
+  cmd = { "hexaly-lsp" },
+  filetypes = { "hexaly" },
+  init_options = { hexalyPath = "/opt/hexaly_14_0/bin/hexaly" },
+}
+```
+
+Discovery is done by the server rather than by each editor extension, so every client needs no
+more than a `cmd`. The server logs which installation it found at startup; when there is none it
+says so and continues with syntax diagnostics.
+
 ## Development
 
 ```sh
@@ -111,6 +158,12 @@ Two areas carry most of the risk and are tested directly rather than incidentall
   rather than scanning for JSON, so an unframed byte written to stdout fails the test. stdout
   belongs to the protocol: a stray `println!` corrupts the stream, and log output must go through
   `client.log_message`.
+
+The compiler layer is checked against a local Hexaly installation, including a sweep over every
+model Hexaly ships as an example — 65 of the 66 are diagnosable, and none may be reported broken. A
+false positive there would be worse than no diagnostics, because a wrong squiggle on correct code
+costs more trust than a missing one. Those tests self-skip without an installation, so CI runs
+without Hexaly on purpose: the syntax layer has to keep working on such a machine.
 
 ## License
 
