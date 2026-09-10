@@ -109,16 +109,28 @@ fn qualified(
     workspace: &mut Workspace,
     parser: &mut tree_sitter::Parser,
 ) -> Vec<CompletionItem> {
-    // A module alias in this file, resolved to its file on disk. This is the case that matters most
+    // A `use` statement in this file, in either of its two forms. This is the case that matters most
     // on a real model and needs no type inference, only name resolution.
-    let alias = symbols::locals(document)
-        .into_iter()
-        .find(|local| local.kind == LocalKind::Module && local.name == qualifier && local.module_path.is_some());
+    let binding = symbols::locals(document).into_iter().find(|local| {
+        matches!(local.kind, LocalKind::Module | LocalKind::Import)
+            && local.name == qualifier
+            && local.module_path.is_some()
+    });
 
-    if let (Some(local), Some(path)) = (alias.as_ref(), path) {
+    if let (Some(local), Some(path)) = (binding.as_ref(), path) {
         let module_path = local.module_path.as_deref().unwrap_or_default();
-        if let Some(exports) = workspace.exports(parser, path, module_path) {
-            return exports.iter().cloned().map(local_item).collect();
+
+        let resolved = match local.kind {
+            // `use Name from module;` binds one member, so what is wanted is that class's members,
+            // one level deeper than the module's own surface.
+            LocalKind::Import => workspace.imported_members(parser, path, module_path, qualifier),
+            _ => workspace
+                .exports(parser, path, module_path)
+                .map(|exports| exports.to_vec()),
+        };
+
+        if let Some(members) = resolved {
+            return members.into_iter().map(local_item).collect();
         }
     }
 
@@ -249,15 +261,17 @@ pub fn definition(
     let word = document.word_at(position)?;
     let path = path?;
 
-    // A qualified reference: resolve the alias, then find the member inside that file.
+    // A qualified reference: resolve the binding, then find the member inside that file.
     if let Some(qualifier) = document.qualifier_at(position) {
-        let alias = symbols::locals(document)
+        let binding = symbols::locals(document)
             .into_iter()
-            .find(|local| local.kind == LocalKind::Module && local.name == qualifier)?;
+            .find(|local| matches!(local.kind, LocalKind::Module | LocalKind::Import) && local.name == qualifier)?;
 
-        let module_path = alias.module_path.as_deref()?;
+        let module_path = binding.module_path.as_deref()?;
         let target = workspace.resolve(path, module_path)?;
 
+        // Both forms land in the same file; the member is looked up by name either way, since a
+        // class member and a module-level declaration are both declarations in that file.
         return member_location(parser, &target, word);
     }
 
@@ -269,16 +283,25 @@ pub fn definition(
         });
     }
 
-    // The alias in a `use` statement: jump to the module it names.
-    let alias = symbols::locals(document)
+    // The name in a `use` statement: jump to the module it names, or to the member it imports.
+    let binding = symbols::locals(document)
         .into_iter()
-        .find(|local| local.kind == LocalKind::Module && local.name == word)?;
+        .find(|local| matches!(local.kind, LocalKind::Module | LocalKind::Import) && local.name == word)?;
 
-    let target = workspace.resolve(path, alias.module_path.as_deref()?)?;
+    let target = workspace.resolve(path, binding.module_path.as_deref()?)?;
+
+    // An imported member has a declaration to land on; a whole module does not, so the file itself
+    // is the answer there.
+    let imported = (binding.kind == LocalKind::Import)
+        .then(|| member_location(parser, &target, word))
+        .flatten();
+
+    if let Some(location) = imported {
+        return Some(location);
+    }
 
     Some(Location {
         uri: uri_for(&target)?,
-        // The file itself rather than a position in it: the whole module is what the alias names.
         range: Range::default(),
     })
 }
@@ -328,6 +351,9 @@ fn local_item(local: symbols::Local) -> CompletionItem {
             // variable at a call site.
             LocalKind::Decision | LocalKind::Variable => CompletionItemKind::VARIABLE,
             LocalKind::Module => CompletionItemKind::MODULE,
+            // An imported member is usually a class in practice, and MODULE would draw the wrong
+            // icon for something that is not one.
+            LocalKind::Import => CompletionItemKind::CLASS,
         }),
         detail: Some(local.detail),
         ..CompletionItem::default()

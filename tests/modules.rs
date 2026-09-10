@@ -41,6 +41,7 @@ fn fixture(name: &str) -> PathBuf {
         root.join("model.hxm"),
         "use utils.functionalUtils as fn;\n\
          use inputs.specialLocations as locations;\n\
+         use SpecialLocations from inputs.specialLocations;\n\
          class Local { field weight; }\n\
          function model() {\n    chosen[i in 0...3] <- bool();\n}\n",
     )
@@ -54,6 +55,27 @@ fn open(path: &Path) -> (tree_sitter::Parser, Document) {
     let text = std::fs::read_to_string(path).expect("fixture exists");
     let document = Document::open(&mut parser, text, 1);
     (parser, document)
+}
+
+/// The position just after `qualifier.` in a document, located by searching the text.
+///
+/// Hand-counted line and column numbers have broken this suite three times: once wrong from the
+/// start, twice made stale by editing the fixture. Deriving them means a fixture change cannot
+/// silently move a cursor onto the wrong token.
+fn after_dot(document: &Document, qualifier: &str) -> Position {
+    let needle = format!("{qualifier}.");
+    let (line, text) = document
+        .text()
+        .lines()
+        .enumerate()
+        .find(|(_, text)| text.contains(&needle))
+        .expect("the probe line is in the document");
+
+    let column = text.find(&needle).expect("just matched") + needle.len();
+    Position {
+        line: line as u32,
+        character: column as u32,
+    }
 }
 
 fn at(line: u32, character: u32) -> Position {
@@ -113,7 +135,13 @@ fn completion_after_a_module_alias_lists_that_modules_functions() {
         Document::open(&mut parser, text, 2)
     };
 
-    let items = language::completions(&document, at(7, 7), Some(&path), &mut workspace, &mut parser);
+    let items = language::completions(
+        &document,
+        after_dot(&document, "fn"),
+        Some(&path),
+        &mut workspace,
+        &mut parser,
+    );
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
 
     assert!(labels.contains(&"listContains"), "got {labels:?}");
@@ -152,7 +180,13 @@ fn completion_after_a_local_class_lists_its_members() {
     let text = std::fs::read_to_string(&path).unwrap() + "function use_it() {\n    SpecialLocations.\n}\n";
     let document = Document::open(&mut parser, text, 2);
 
-    let items = language::completions(&document, at(7, 21), Some(&path), &mut workspace, &mut parser);
+    let items = language::completions(
+        &document,
+        after_dot(&document, "SpecialLocations"),
+        Some(&path),
+        &mut workspace,
+        &mut parser,
+    );
     let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
 
     assert!(labels.contains(&"PICK_MANUAL"), "static field missing: {labels:?}");
@@ -160,6 +194,32 @@ fn completion_after_a_local_class_lists_its_members() {
     assert!(labels.contains(&"describe"), "method missing: {labels:?}");
 
     let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn completion_after_an_imported_member_lists_that_classs_members() {
+    // `use SpecialLocations from inputs.specialLocations;` binds one member, not the module, so
+    // `SpecialLocations.` must reach one level deeper than a module alias would. Found on the real
+    // model, where this form returned nothing at all.
+    let root = fixture("importform");
+    let path = root.join("model.hxm");
+    let mut parser = hexaly_lsp::parser();
+    let mut workspace = Workspace::default();
+
+    let text = std::fs::read_to_string(&path).unwrap() + "function use_it() {\n    SpecialLocations.\n}\n";
+    let document = Document::open(&mut parser, text, 2);
+
+    let items = language::completions(
+        &document,
+        after_dot(&document, "SpecialLocations"),
+        Some(&path),
+        &mut workspace,
+        &mut parser,
+    );
+    let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
+
+    assert!(labels.contains(&"PICK_MANUAL"), "got {labels:?}");
+    assert!(labels.contains(&"describe"), "got {labels:?}");
 }
 
 #[test]
@@ -172,7 +232,12 @@ fn definition_finds_a_declaration_in_the_same_file() {
     let text = std::fs::read_to_string(&path).unwrap() + "function other() {\n    model();\n}\n";
     let document = Document::open(&mut parser, text, 2);
 
-    let location = language::definition(&document, at(7, 6), Some(&path), &mut workspace, &mut parser)
+    let call = document
+        .text()
+        .lines()
+        .position(|line| line.contains("model();"))
+        .expect("the call is in the document") as u32;
+    let location = language::definition(&document, at(call, 6), Some(&path), &mut workspace, &mut parser)
         .expect("model() is declared in this file");
 
     assert!(
@@ -180,7 +245,13 @@ fn definition_finds_a_declaration_in_the_same_file() {
         "got {}",
         location.uri.as_str()
     );
-    assert_eq!(location.range.start.line, 3, "the `function model` line");
+    // Derived, not hard-coded: the fixture gained a line and this assert would otherwise be stale.
+    let declared = document
+        .text()
+        .lines()
+        .position(|line| line.contains("function model()"))
+        .expect("model is declared in the fixture") as u32;
+    assert_eq!(location.range.start.line, declared);
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -198,8 +269,18 @@ fn definition_crosses_a_use_boundary() {
     let text = std::fs::read_to_string(&path).unwrap() + "function other() {\n    fn.listContains(1, 2);\n}\n";
     let document = Document::open(&mut parser, text, 2);
 
-    let location = language::definition(&document, at(7, 10), Some(&path), &mut workspace, &mut parser)
-        .expect("fn.listContains resolves across the use boundary");
+    let cursor = after_dot(&document, "fn");
+    let location = language::definition(
+        &document,
+        Position {
+            line: cursor.line,
+            character: cursor.character + 3,
+        },
+        Some(&path),
+        &mut workspace,
+        &mut parser,
+    )
+    .expect("fn.listContains resolves across the use boundary");
 
     assert!(
         location.uri.as_str().ends_with("utils/functionalUtils.hxm"),
@@ -278,7 +359,13 @@ fn an_unresolvable_alias_falls_back_rather_than_erroring() {
 
     // No panic, no error: an unresolvable module yields an empty list, and the editor shows nothing
     // rather than the wrong thing.
-    let items = language::completions(&document, at(2, 9), Some(&path), &mut workspace, &mut parser);
+    let items = language::completions(
+        &document,
+        after_dot(&document, "gone"),
+        Some(&path),
+        &mut workspace,
+        &mut parser,
+    );
     assert!(items.is_empty(), "expected no candidates, got {}", items.len());
 
     let _ = std::fs::remove_dir_all(&root);

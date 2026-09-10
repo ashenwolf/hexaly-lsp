@@ -61,6 +61,26 @@ impl Workspace {
         self.load(parser, &path).map(|module| module.exports.as_slice())
     }
 
+    /// The members of a class imported from another file, for `use Name from path;`.
+    ///
+    /// One level deeper than `exports`: that returns a module's own declarations, this looks inside
+    /// the module for a named class and returns *its* members. `SpecialLocations.PICK_MANUAL` needs
+    /// this, and treating the import as a module would instead offer the class as its own member.
+    pub fn imported_members(
+        &mut self,
+        parser: &mut tree_sitter::Parser,
+        importer: &Path,
+        module_path: &str,
+        name: &str,
+    ) -> Option<Vec<Local>> {
+        let path = self.resolve(importer, module_path)?;
+        let text = std::fs::read_to_string(&path).ok()?;
+        let document = Document::open(parser, text, 0);
+
+        let members = symbols::class_members(&document, name);
+        (!members.is_empty()).then_some(members)
+    }
+
     /// The file a dotted module path names, if one exists.
     ///
     /// Candidate roots are the workspace roots plus every ancestor of the importing file, nearest

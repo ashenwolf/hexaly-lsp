@@ -31,7 +31,12 @@ pub enum LocalKind {
     /// A model decision or intermediate expression: `x[i in 0...n] <- bool()`.
     Decision,
     Variable,
+    /// A whole module, bound by `use path as alias;`.
     Module,
+    /// A single member imported from a module, bound by `use Name from path;`. Distinct from
+    /// `Module` because it resolves one level deeper: to a declaration inside that file, not to the
+    /// file's own surface.
+    Import,
 }
 
 /// Declarations at the top level of the file only.
@@ -62,7 +67,7 @@ pub fn top_level(document: &Document) -> Vec<Local> {
 
             children
                 .into_iter()
-                .filter_map(|child| declaration(document, child))
+                .flat_map(|child| declarations(document, child))
                 .collect::<Vec<_>>()
         })
         .collect();
@@ -84,7 +89,7 @@ pub fn locals(document: &Document) -> Vec<Local> {
     let mut found: Vec<Local> = Vec::new();
 
     while let Some(node) = stack.pop() {
-        if let Some(local) = declaration(document, node) {
+        for local in declarations(document, node) {
             // First declaration wins: a name redeclared later is the same name, and Hexaly rejects
             // genuine duplicates anyway.
             if !found.iter().any(|existing| existing.name == local.name) {
@@ -100,44 +105,86 @@ pub fn locals(document: &Document) -> Vec<Local> {
     found
 }
 
-fn declaration(document: &Document, node: tree_sitter::Node<'_>) -> Option<Local> {
+/// The declarations a node introduces. A `use` statement can introduce several — `use A, B from m;`
+/// is legal — so this returns a list rather than an option.
+fn declarations(document: &Document, node: tree_sitter::Node<'_>) -> Vec<Local> {
     let kind = match node.kind() {
         "function_declaration" => LocalKind::Function,
         "class_declaration" => LocalKind::Class,
         "indexed_declaration" => LocalKind::Decision,
         "declarator" => LocalKind::Variable,
-        "use_statement" => return module(document, node),
-        _ => return None,
+        "use_statement" => return module(document, node).unwrap_or_default(),
+        _ => return Vec::new(),
     };
 
-    let name = node.child_by_field_name("name")?;
-    let text = document.node_text(name)?;
-
-    Some(Local {
-        name: text.to_string(),
-        kind,
-        detail: summarise(document, node),
-        module_path: None,
-    })
+    node.child_by_field_name("name")
+        .and_then(|name| document.node_text(name))
+        .map(|text| {
+            vec![Local {
+                name: text.to_string(),
+                kind,
+                detail: summarise(document, node),
+                module_path: None,
+            }]
+        })
+        .unwrap_or_default()
 }
 
-/// A `use` statement contributes the name a qualified call would start with: the alias when there is
-/// one, otherwise the last segment of the module path (`use utils.fn;` is reached as `fn`).
-fn module(document: &Document, node: tree_sitter::Node<'_>) -> Option<Local> {
+/// A `use` statement contributes the names a qualified reference can start with.
+///
+/// Two distinct forms, and they mean different things:
+///
+/// - `use utils.functionalUtils as fn;` binds the whole module, so `fn.` reaches the module's
+///   declarations. The alias (or the last path segment) is the name.
+/// - `use SpecialLocations from inputs.specialLocations;` binds *one member* of that module, so
+///   `SpecialLocations.` reaches the members of that class, one level deeper.
+///
+/// The second form yields an `Import` rather than a `Module` so the resolver can tell them apart:
+/// treating it as a module would list the file's declarations, which for a class import means
+/// offering the class itself as its own member.
+fn module(document: &Document, node: tree_sitter::Node<'_>) -> Option<Vec<Local>> {
     let path = node.child_by_field_name("module")?;
     let module_path = document.node_text(path)?.to_string();
+    let detail = summarise(document, node);
+
+    let mut cursor = node.walk();
+    let specifiers: Vec<tree_sitter::Node> = node
+        .children(&mut cursor)
+        .filter(|child| child.kind() == "import_specifier")
+        .collect();
+
+    if !specifiers.is_empty() {
+        return Some(
+            specifiers
+                .into_iter()
+                .filter_map(|specifier| {
+                    // `use X as Y from m;` is legal, and the alias is what appears in code.
+                    let name = specifier
+                        .child_by_field_name("alias")
+                        .or_else(|| specifier.child_by_field_name("name"))?;
+
+                    Some(Local {
+                        name: document.node_text(name)?.to_string(),
+                        kind: LocalKind::Import,
+                        detail: detail.clone(),
+                        module_path: Some(module_path.clone()),
+                    })
+                })
+                .collect(),
+        );
+    }
 
     let name = match node.child_by_field_name("alias") {
         Some(alias) => document.node_text(alias)?.to_string(),
         None => module_path.rsplit('.').next()?.to_string(),
     };
 
-    Some(Local {
+    Some(vec![Local {
         name,
         kind: LocalKind::Module,
-        detail: summarise(document, node),
+        detail,
         module_path: Some(module_path),
-    })
+    }])
 }
 
 /// Members of a class declared in this document, for completion after `ClassName.`.
